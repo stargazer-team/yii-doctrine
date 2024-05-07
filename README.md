@@ -233,5 +233,5 @@ Command:
 ### Fixture
 If need fixture, install package
 ```bash
-composer require fcnybok/yii-doctrine-fixture --dev
+composer require stargazer-team/yii-doctrine-fixture --dev
 ```
