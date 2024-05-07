@@ -13,6 +13,7 @@ return [
             DoctrineManagerFactory $doctrineManagerFactory
         ): DoctrineManager => $doctrineManagerFactory->create($params['yiisoft/yii-doctrine'] ?? []),
         'reset' => function (): void {
+            /** @var DoctrineManager $this */
             $this->resetAllManager();
         },
     ],
