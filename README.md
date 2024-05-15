@@ -6,6 +6,15 @@
     <br>
 </p>
 
+[![Latest Stable Version](https://poser.pugx.org/stargazer-team/yii-doctrine/v/stable.png)](https://packagist.org/packages/stargazer-team/yii-doctrine)
+[![Total Downloads](https://poser.pugx.org/stargazer-team/yii-doctrine/downloads.png)](https://packagist.org/packages/stargazer-team/yii-doctrine)
+[![Build status](https://github.com/stargazer-team/yii-doctrine/workflows/build/badge.svg)](https://github.com/stargazer-team/yii-doctrine/actions)
+[![Code Coverage](https://scrutinizer-ci.com/g/stargazer-team/yii-doctrine/badges/coverage.png)](https://scrutinizer-ci.com/g/stargazer-team/yii-doctrine/)
+[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/stargazer-team/yii-doctrine/badges/quality-score.png)](https://scrutinizer-ci.com/g/stargazer-team/yii-doctrine/)
+[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fyiisoft%2Fyii-console%2Fmaster)](https://dashboard.stryker-mutator.io/reports/github.com/stargazer-team/yii-doctrine/master)
+[![static analysis](https://github.com/stargazer-team/yii-doctrine/workflows/static%20analysis/badge.svg)](https://github.com/stargazer-team/yii-doctrine/actions?query=workflow%3A%22static+analysis%22)
+[![type-coverage](https://shepherd.dev/github/stargazer-team/yii-doctrine/coverage.svg)](https://shepherd.dev/github/stargazer-team/yii-doctrine)
+
 
 Installation
 ------------
