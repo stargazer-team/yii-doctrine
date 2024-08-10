@@ -11,3 +11,10 @@
 ## 1.0.2
 
 - Fix readme.
+
+## 2.0.0
+
+- Update dependency
+- Update cache
+- Add config options
+- Fix pipeline

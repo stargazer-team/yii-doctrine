@@ -8,6 +8,7 @@ use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\Types\Type;
 use Yiisoft\Injector\Injector;
+use Yiisoft\Yii\Doctrine\Dbal\Enum\ConfigOptions;
 
 final class ConfigurationFactory
 {
@@ -34,14 +35,14 @@ final class ConfigurationFactory
             function (string $classMiddleware): Middleware {
                 return $this->injector->make($classMiddleware);
             },
-            $dbalConfig['middlewares'] ?? []
+            $dbalConfig[ConfigOptions::MIDDLEWARES] ?? []
         );
 
         $configuration->setMiddlewares($middlewares);
 
-        $this->configureAutoCommit($configuration, $dbalConfig['auto_commit'] ?? null);
+        $this->configureAutoCommit($configuration, $dbalConfig[ConfigOptions::AUTO_COMMIT] ?? null);
 
-        $this->configureSchemaAssetsFilter($configuration, $dbalConfig['schema_assets_filter'] ?? null);
+        $this->configureSchemaAssetsFilter($configuration, $dbalConfig[ConfigOptions::SCHEMA_ASSETS_FILTER] ?? null);
 
         return $configuration;
     }

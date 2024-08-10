@@ -10,6 +10,7 @@ use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Types\Type;
 use InvalidArgumentException;
+use Yiisoft\Yii\Doctrine\Dbal\Enum\ConfigOptions;
 
 final class ConnectionFactory
 {
@@ -32,15 +33,15 @@ final class ConnectionFactory
      */
     public function create(array $dbalConfig): Connection
     {
-        if (!isset($dbalConfig['params'])) {
+        if (!isset($dbalConfig[ConfigOptions::PARAMS])) {
             throw new InvalidArgumentException('Not found "params" connection');
         }
 
         $configuration = $this->configurationFactory->create($dbalConfig);
 
-        $connection = DriverManager::getConnection($dbalConfig['params'], $configuration);
+        $connection = DriverManager::getConnection($dbalConfig[ConfigOptions::PARAMS], $configuration);
 
-        $this->configureCustomTypes($connection, $dbalConfig['custom_types'] ?? []);
+        $this->configureCustomTypes($connection, $dbalConfig[ConfigOptions::CUSTOM_TYPES] ?? []);
 
         return $connection;
     }

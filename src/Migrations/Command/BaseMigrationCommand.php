@@ -9,16 +9,26 @@ use Doctrine\Migrations\Configuration\EntityManager\ManagerRegistryEntityManager
 use Doctrine\Migrations\Configuration\Migration\ExistingConfiguration;
 use Doctrine\Migrations\DependencyFactory;
 use Doctrine\Migrations\Tools\Console\Exception\DependenciesNotSatisfied;
+use Exception;
 use Psr\Log\LoggerInterface;
 use Psr\Log\NullLogger;
 use RuntimeException;
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
+use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Yiisoft\Yii\Doctrine\DoctrineManager;
 use Yiisoft\Yii\Doctrine\Migrations\MigrationConfigurationManager;
+
+use function array_keys;
+use function assert;
+use function count;
+use function is_string;
+use function key;
+use function sprintf;
 
 class BaseMigrationCommand extends Command
 {
@@ -34,6 +44,10 @@ class BaseMigrationCommand extends Command
         parent::__construct();
     }
 
+    protected function canExecute(string $question, InputInterface $input): bool
+    {
+        return !$input->isInteractive() || $this->io->confirm($question);
+    }
 
     protected function configure(): void
     {
@@ -43,6 +57,48 @@ class BaseMigrationCommand extends Command
             InputOption::VALUE_OPTIONAL,
             'The name to a migrations configuration on config.'
         );
+    }
+
+    protected function getDependencyFactory(): DependencyFactory
+    {
+        if ($this->dependencyFactory === null) {
+            throw DependenciesNotSatisfied::new();
+        }
+
+        return $this->dependencyFactory;
+    }
+
+    final protected function getNamespace(InputInterface $input, OutputInterface $output): string
+    {
+        $configuration = $this->getDependencyFactory()->getConfiguration();
+
+        $namespace = $input->getOption('namespace');
+        if ($namespace === '') {
+            $namespace = null;
+        }
+
+        $dirs = $configuration->getMigrationDirectories();
+        if ($namespace === null && count($dirs) === 1) {
+            $namespace = key($dirs);
+        } elseif ($namespace === null && count($dirs) > 1) {
+            /** @var QuestionHelper $helper */
+            $helper = $this->getHelper('question');
+            $question = new ChoiceQuestion(
+                'Please choose a namespace (defaults to the first one)',
+                array_keys($dirs),
+                0,
+            );
+            $namespace = $helper->ask($input, $output, $question);
+            $this->io->text(sprintf('You have selected the "%s" namespace', $namespace));
+        }
+
+        if (!isset($dirs[$namespace])) {
+            throw new Exception(sprintf('Path not defined for the namespace "%s"', $namespace));
+        }
+
+        assert(is_string($namespace));
+
+        return $namespace;
     }
 
     protected function initialize(InputInterface $input, OutputInterface $output): void
@@ -81,19 +137,5 @@ class BaseMigrationCommand extends Command
         }
 
         $this->dependencyFactory->freeze();
-    }
-
-    protected function getDependencyFactory(): DependencyFactory
-    {
-        if ($this->dependencyFactory === null) {
-            throw DependenciesNotSatisfied::new();
-        }
-
-        return $this->dependencyFactory;
-    }
-
-    protected function canExecute(string $question, InputInterface $input): bool
-    {
-        return !$input->isInteractive() || $this->io->confirm($question);
     }
 }

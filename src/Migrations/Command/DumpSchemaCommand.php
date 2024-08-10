@@ -11,9 +11,6 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Yiisoft\Yii\Console\ExitCode;
 
 use function addslashes;
-use function assert;
-use function is_string;
-use function key;
 use function sprintf;
 
 /**
@@ -75,19 +72,7 @@ EOT
             ->getDependencyFactory()
             ->getSchemaDumper();
 
-        $configuration = $this
-            ->getDependencyFactory()
-            ->getConfiguration();
-
-        /** @var string|null $namespace */
-        $namespace = $input->getOption('namespace');
-
-        if ($namespace === null) {
-            $dirs = $configuration->getMigrationDirectories();
-            $namespace = key($dirs);
-        }
-
-        assert(is_string($namespace));
+        $namespace = $this->getNamespace($input, $output);
 
         $this->checkNoPreviousDumpExistsForNamespace($namespace);
 

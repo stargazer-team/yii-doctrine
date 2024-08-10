@@ -6,11 +6,11 @@ namespace Yiisoft\Yii\Doctrine\Factory;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
-use Psr\Cache\CacheItemPoolInterface;
 use RuntimeException;
-use Symfony\Component\Cache\Adapter\NullAdapter;
+use Yiisoft\Yii\Doctrine\Dbal\Enum\ConfigOptions as DbalConfigOption;
 use Yiisoft\Yii\Doctrine\Dbal\Factory\ConnectionFactory;
 use Yiisoft\Yii\Doctrine\DoctrineManager;
+use Yiisoft\Yii\Doctrine\Orm\Enum\ConfigOptions as OrmConfigOption;
 use Yiisoft\Yii\Doctrine\Orm\Factory\EntityManagerFactory;
 
 use function sprintf;
@@ -20,7 +20,6 @@ final class DoctrineManagerFactory
     public function __construct(
         private readonly ConnectionFactory $connectionFactory,
         private readonly EntityManagerFactory $entityManagerFactory,
-        private readonly CacheItemPoolInterface $cacheDriver = new NullAdapter(),
     ) {
     }
 
@@ -32,8 +31,8 @@ final class DoctrineManagerFactory
         // init connections
         $connections = [];
 
-        if (!empty($doctrineConfig['dbal'])) {
-            foreach ($doctrineConfig['dbal'] as $name => $dbalConfig) {
+        if (!empty($doctrineConfig[DbalConfigOption::DBAL])) {
+            foreach ($doctrineConfig[DbalConfigOption::DBAL] as $name => $dbalConfig) {
                 $connections[$name] = $this->connectionFactory->create($dbalConfig);
             }
         }
@@ -41,9 +40,9 @@ final class DoctrineManagerFactory
         // init entity managers
         $entityManagers = [];
 
-        if (!empty($doctrineConfig['orm']['entity_managers'])) {
-            foreach ($doctrineConfig['orm']['entity_managers'] as $name => $entityManagerConfig) {
-                $connectionName = $entityManagerConfig['connection'] ?? null;
+        if (!empty($doctrineConfig[OrmConfigOption::ORM][OrmConfigOption::ENTITY_MANAGERS])) {
+            foreach ($doctrineConfig[OrmConfigOption::ORM][OrmConfigOption::ENTITY_MANAGERS] as $name => $entityManagerConfig) {
+                $connectionName = $entityManagerConfig[OrmConfigOption::CONNECTION] ?? null;
 
                 if (null === $connectionName) {
                     throw new RuntimeException(
@@ -62,9 +61,8 @@ final class DoctrineManagerFactory
 
                 $entityManagers[$name] = $this->entityManagerFactory->create(
                     $connection,
-                    $this->cacheDriver,
                     $entityManagerConfig,
-                    $doctrineConfig['orm']['proxies'] ?? []
+                    $doctrineConfig[OrmConfigOption::ORM][OrmConfigOption::PROXIES] ?? [],
                 );
             }
         }

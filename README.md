@@ -11,7 +11,6 @@
 [![Build status](https://github.com/stargazer-team/yii-doctrine/workflows/build/badge.svg)](https://github.com/stargazer-team/yii-doctrine/actions)
 [![Code Coverage](https://scrutinizer-ci.com/g/stargazer-team/yii-doctrine/badges/coverage.png)](https://scrutinizer-ci.com/g/stargazer-team/yii-doctrine/)
 [![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/stargazer-team/yii-doctrine/badges/quality-score.png)](https://scrutinizer-ci.com/g/stargazer-team/yii-doctrine/)
-[![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fyiisoft%2Fyii-console%2Fmaster)](https://dashboard.stryker-mutator.io/reports/github.com/stargazer-team/yii-doctrine/master)
 [![static analysis](https://github.com/stargazer-team/yii-doctrine/workflows/static%20analysis/badge.svg)](https://github.com/stargazer-team/yii-doctrine/actions?query=workflow%3A%22static+analysis%22)
 [![type-coverage](https://shepherd.dev/github/stargazer-team/yii-doctrine/coverage.svg)](https://shepherd.dev/github/stargazer-team/yii-doctrine)
 
@@ -44,11 +43,19 @@ php yii doctrine:database:drop --if-exists --force
 
 Dynamic create connection:
 ```php
+<?php
+
+declare(strict_types=1);
+
+use Yiisoft\Yii\Doctrine\Dbal\Enum\ConfigOptions;
+use Yiisoft\Yii\Doctrine\Dbal\Factory\DynamicConnectionFactory;
+use Yiisoft\Yii\Doctrine\DoctrineManager;
+
 final class ConnectionService
 {
     public function __construct(
-        private readonly \Yiisoft\Yii\Doctrine\Dbal\Factory\DynamicConnectionFactory $dynamicConnectionFactory,
-        private readonly \Yiisoft\Yii\Doctrine\DoctrineManager $doctrineManager,
+        private readonly DynamicConnectionFactory $dynamicConnectionFactory,
+        private readonly DoctrineManager $doctrineManager,
     ) {
     }
     
@@ -56,7 +63,7 @@ final class ConnectionService
     {
         $connectionModel = $this->dynamicConnectionFactory->createConnection(
             [
-                'params' => [
+                ConfigOptions::PARAMS => [
                     'driver' => 'pdo_pgsql',
                     'dbname' => 'dbname',
                     'host' => 'localhost',
@@ -85,19 +92,32 @@ Command:
 If need default entity manager add on di.php
 
 ```php
+<?php
+
+declare(strict_types=1);
+
+use Yiisoft\Yii\Doctrine\DoctrineManager
+use Yiisoft\Yii\Doctrine\Orm\Enum\ConfigOptions;
+
 EntityManagerInterface::class => fn(
     DoctrineManager $doctrineManager
 ): EntityManagerInterface => $doctrineManager->getManager(
-        $params['yiisoft/yii-doctrine']['orm']['default_entity_manager'] ?? DoctrineManager::DEFAULT_ENTITY_MANAGER
+        $params['yiisoft/yii-doctrine'][ConfigOptions::ORM][ConfigOptions::DEFAULT_ENTITY_MANAGER] ?? DoctrineManager::DEFAULT_ENTITY_MANAGER,
    ),
 ```
 
 Use default entity manager:
 ```php
+<?php
+
+declare(strict_types=1);
+
+use Doctrine\ORM\EntityManagerInterface;
+
 final class TestController
 {
     public function __construct(
-        private readonly \Doctrine\ORM\EntityManagerInterface $entityManager,
+        private readonly EntityManagerInterface $entityManager,
     ) {
     }
 }
@@ -105,10 +125,16 @@ final class TestController
 
 If two or more entity manager use Yiisoft\Yii\Doctrine\Doctrine\DoctrineManager, find by name entity manager
 ```php
+<?php
+
+declare(strict_types=1);
+
+use Yiisoft\Yii\Doctrine\DoctrineManager;
+
 final class Test2Controller
 {
     public function __construct(
-        private readonly Yiisoft\Yii\Doctrine\DoctrineManager $doctrineManager,
+        private readonly DoctrineManager $doctrineManager,
     ) {
     }
 }
@@ -116,11 +142,19 @@ final class Test2Controller
 
 Dynamic create entity manager:
 ```php
+<?php
+
+declare(strict_types=1);
+
+use Yiisoft\Yii\Doctrine\DoctrineManager;
+use Yiisoft\Yii\Doctrine\Orm\Enum\ConfigOptions;
+use Yiisoft\Yii\Doctrine\Orm\Factory\DynamicEntityManagerFactory;
+
 final class EntityManagerService
 {
     public function __construct(
-        private readonly \Yiisoft\Yii\Doctrine\Orm\Factory\DynamicEntityManagerFactory $dynamicEntityManagerFactory,
-        private readonly \Yiisoft\Yii\Doctrine\DoctrineManager $doctrineManager
+        private readonly DynamicEntityManagerFactory $dynamicEntityManagerFactory,
+        private readonly DoctrineManager $doctrineManager,
     ) {
     }
     
@@ -128,19 +162,19 @@ final class EntityManagerService
     {
         $this->dynamicEntityManagerFactory->create(
             [
-                'connection' => 'mysql',
-                'mappings' => [
+                ConfigOptions::CONNECTION => 'mysql',
+                ConfigOptions::MAPPINGS => [
                     'Mysql' => [
-                        'dir' => '@common/Mysql',
-                        'driver' => DriverMappingEnum::ATTRIBUTE_MAPPING,
-                        'namespace' => 'Common\Mysql',
+                        ConfigOptions::MAPPING_DIR => '@common/Mysql',
+                        ConfigOptions::MAPPING_DRIVER => DriverMappingEnum::ATTRIBUTE_MAPPING,
+                        ConfigOptions::MAPPING_NAMESPACE => 'Common\Mysql',
                     ],
                 ],
             ],
             [
-                'namespace' => 'Proxies',
-                'path' => '@runtime/cache/doctrine/proxy',
-                'auto_generate' => true
+                ConfigOptions::PROXY_NAMESPACE => 'Proxies',
+                ConfigOptions::PROXY_PATH => '@runtime/cache/doctrine/proxy',
+                ConfigOptions::PROXY_AUTO_GENERATE => true
             ],
             'mysql'
         );
@@ -173,36 +207,55 @@ Command:
 #### Cache
 
 Extension use psr6 cache implementation symfony cache.
+Default cache Symfony\Component\Cache\Adapter\NullAdapter.
 
 Options add config on params.php
 
 ```php
+<?php
+
+declare(strict_types=1);
+
+use Yiisoft\Yii\Doctrine\Cache\CacheCollector;
+use Yiisoft\Yii\Doctrine\Cache\Enum\ConfigOptions;
+
 return [
     'yiisoft/yii-doctrine' => [
         // Used symfony cache
-        'cache' => [
-            'driver' => CacheAdapterEnum::ARRAY_ADAPTER,
+        ConfigOptions::CACHE => [
+            ConfigOptions::DRIVER => CacheAdapterEnum::ARRAY_ADAPTER,
             // only redis or memcached
-            'server' => [
-                'host' => 'localhost',
-                'port' => 6379
+            ConfigOptions::SERVER => [
+                ConfigOptions::HOST => 'localhost',
+                ConfigOptions::PORT => 6379
             ],
-            'namespace' => 'doctrine_',
+            ConfigOptions::NAMESPACE => 'doctrine_',
             // only file cache driver
-            'path' => '@runtime/cache/doctrine',
+            ConfigOptions::PATH => '@runtime/cache/doctrine',
         ],
 ];
 ```
 Add on di.php configuration psr-6 cache
 ```php
-CacheItemPoolInterface::class => fn(CacheFactory $cacheFactory): CacheItemPoolInterface => $cacheFactory->create(
-    $params['yiisoft/yii-doctrine']['cache'] ?? []
-),
-```
-or add di.php customer implementation
+<?php
 
-```php
-CacheItemPoolInterface::class => new \Symfony\Component\Cache\Adapter\ArrayAdapter(),
+declare(strict_types=1);
+
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
+use Yiisoft\Yii\Doctrine\Cache\CacheCollector
+
+return [
+    CacheCollector::DOCTRINE_HYDRATION_CACHE => fn(CacheFactory $cacheFactory): CacheItemPoolInterface => $cacheFactory->create(
+        $params['yiisoft/yii-doctrine']['cache'] ?? []
+    ),
+    // or add di.php customer implementation
+    CacheCollector::DOCTRINE_HYDRATION_CACHE => ArrayAdapter(),        
+    CacheCollector::DOCTRINE_METADATA_CACHE => ArrayAdapter(),        
+    CacheCollector::DOCTRINE_QUERY_CACHE => ArrayAdapter(),        
+    CacheCollector::DOCTRINE_RESULT_CACHE => ArrayAdapter(),        
+    
+];
+
 ```
 
 Command:

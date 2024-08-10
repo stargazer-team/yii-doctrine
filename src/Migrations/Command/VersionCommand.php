@@ -113,78 +113,15 @@ EOT
             $confirmation = $this->io->confirm($question);
 
             if ($confirmation) {
-                $this->markVersions($input, $output);
+                $this->markVersions($input);
             } else {
                 $this->io->error('Migration cancelled!');
             }
         } else {
-            $this->markVersions($input, $output);
+            $this->markVersions($input);
         }
 
         return ExitCode::OK;
-    }
-
-    /** @throws InvalidOptionUsage */
-    private function markVersions(InputInterface $input, OutputInterface $output): void
-    {
-        $affectedVersion = $input->getArgument('version');
-        $allOption = $input->getOption('all');
-        $rangeFromOption = $input->getOption('range-from');
-        $rangeToOption = $input->getOption('range-to');
-
-        if ($allOption === true && ($rangeFromOption !== null || $rangeToOption !== null)) {
-            throw InvalidOptionUsage::new(
-                'Options --all and --range-to/--range-from both used. You should use only one of them.',
-            );
-        }
-
-        if ($rangeFromOption !== null xor $rangeToOption !== null) {
-            throw InvalidOptionUsage::new(
-                'Options --range-to and --range-from should be used together.',
-            );
-        }
-
-        $executedMigrations = $this
-            ->getDependencyFactory()
-            ->getMetadataStorage()
-            ->getExecutedMigrations();
-
-        $availableVersions = $this
-            ->getDependencyFactory()
-            ->getMigrationPlanCalculator()
-            ->getMigrations();
-
-        if ($allOption === true) {
-            if ($input->getOption('delete') === true) {
-                foreach ($executedMigrations->getItems() as $availableMigration) {
-                    $this->mark($input, $output, $availableMigration->getVersion(), false, $executedMigrations);
-                }
-            }
-
-            foreach ($availableVersions->getItems() as $availableMigration) {
-                $this->mark($input, $output, $availableMigration->getVersion(), true, $executedMigrations);
-            }
-        } elseif ($affectedVersion !== null) {
-            $this->mark($input, $output, new Version($affectedVersion), false, $executedMigrations);
-        } elseif ($rangeFromOption !== null && $rangeToOption !== null) {
-            $migrate = false;
-
-            foreach ($availableVersions->getItems() as $availableMigration) {
-                if ((string)$availableMigration->getVersion() === $rangeFromOption) {
-                    $migrate = true;
-                }
-
-                if ($migrate) {
-                    $this->mark($input, $output, $availableMigration->getVersion(), true, $executedMigrations);
-                }
-
-                if ((string)$availableMigration->getVersion() === $rangeToOption) {
-                    break;
-                }
-            }
-        } else {
-            throw InvalidOptionUsage::new('You must specify the version or use the --all argument.');
-        }
     }
 
     /**
@@ -194,10 +131,9 @@ EOT
      */
     private function mark(
         InputInterface $input,
-        OutputInterface $output,
         Version $version,
         bool $all,
-        ExecutedMigrationsList $executedMigrations
+        ExecutedMigrationsList $executedMigrations,
     ): void {
         try {
             $availableMigration = $this
@@ -277,6 +213,69 @@ EOT
                     (string)$version,
                 )
             );
+        }
+    }
+
+    /** @throws InvalidOptionUsage */
+    private function markVersions(InputInterface $input): void
+    {
+        $affectedVersion = $input->getArgument('version');
+        $allOption = $input->getOption('all');
+        $rangeFromOption = $input->getOption('range-from');
+        $rangeToOption = $input->getOption('range-to');
+
+        if ($allOption === true && ($rangeFromOption !== null || $rangeToOption !== null)) {
+            throw InvalidOptionUsage::new(
+                'Options --all and --range-to/--range-from both used. You should use only one of them.',
+            );
+        }
+
+        if ($rangeFromOption !== null xor $rangeToOption !== null) {
+            throw InvalidOptionUsage::new(
+                'Options --range-to and --range-from should be used together.',
+            );
+        }
+
+        $executedMigrations = $this
+            ->getDependencyFactory()
+            ->getMetadataStorage()
+            ->getExecutedMigrations();
+
+        $availableVersions = $this
+            ->getDependencyFactory()
+            ->getMigrationPlanCalculator()
+            ->getMigrations();
+
+        if ($allOption === true) {
+            if ($input->getOption('delete') === true) {
+                foreach ($executedMigrations->getItems() as $availableMigration) {
+                    $this->mark($input, $availableMigration->getVersion(), false, $executedMigrations);
+                }
+            }
+
+            foreach ($availableVersions->getItems() as $availableMigration) {
+                $this->mark($input, $availableMigration->getVersion(), true, $executedMigrations);
+            }
+        } elseif ($affectedVersion !== null) {
+            $this->mark($input, new Version($affectedVersion), false, $executedMigrations);
+        } elseif ($rangeFromOption !== null && $rangeToOption !== null) {
+            $migrate = false;
+
+            foreach ($availableVersions->getItems() as $availableMigration) {
+                if ((string)$availableMigration->getVersion() === $rangeFromOption) {
+                    $migrate = true;
+                }
+
+                if ($migrate) {
+                    $this->mark($input, $availableMigration->getVersion(), true, $executedMigrations);
+                }
+
+                if ((string)$availableMigration->getVersion() === $rangeToOption) {
+                    break;
+                }
+            }
+        } else {
+            throw InvalidOptionUsage::new('You must specify the version or use the --all argument.');
         }
     }
 }

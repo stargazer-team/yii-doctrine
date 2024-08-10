@@ -6,6 +6,7 @@ namespace Yiisoft\Yii\Doctrine\Migrations\Factory;
 
 use Doctrine\Migrations\Configuration\Migration\ConfigurationArray;
 use Yiisoft\Aliases\Aliases;
+use Yiisoft\Yii\Doctrine\Migrations\Enum\ConfigOptions;
 use Yiisoft\Yii\Doctrine\Migrations\MigrationConfigurationManager;
 
 final class MigrationConfigurationFactory
@@ -34,8 +35,10 @@ final class MigrationConfigurationFactory
 
         if (!empty($migrationConfig)) {
             foreach ($migrationConfig as $configName => $config) {
-                foreach ($config['migrations_paths'] as $namespace => $path) {
-                    $migrationConfig[$configName]['migrations_paths'][$namespace] = $this->aliases->get($path);
+                foreach ($config[ConfigOptions::MIGRATIONS_PATHS] as $namespace => $path) {
+                    $migrationConfig[$configName][ConfigOptions::MIGRATIONS_PATHS][$namespace] = $this->aliases->get(
+                        $path,
+                    );
                 }
             }
 

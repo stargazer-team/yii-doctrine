@@ -15,10 +15,9 @@ use Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use Doctrine\ORM\Query\Filter\SQLFilter;
 use Doctrine\ORM\Repository\RepositoryFactory;
 use Doctrine\Persistence\Mapping\AbstractClassMetadataFactory;
-use Psr\Cache\CacheItemPoolInterface;
 use RuntimeException;
-use Symfony\Component\Cache\Adapter\NullAdapter;
 use Yiisoft\Yii\Doctrine\DoctrineManager;
+use Yiisoft\Yii\Doctrine\Orm\Enum\ConfigOptions;
 use Yiisoft\Yii\Doctrine\Orm\Enum\DriverMappingEnum;
 
 use function sprintf;
@@ -28,7 +27,6 @@ final class DynamicEntityManagerFactory
     public function __construct(
         private readonly DoctrineManager $doctrineManager,
         private readonly EntityManagerFactory $entityManagerFactory,
-        private readonly CacheItemPoolInterface $cache = new NullAdapter(),
     ) {
     }
 
@@ -65,20 +63,15 @@ final class DynamicEntityManagerFactory
     public function create(
         array $entityManagerConfig,
         array $proxyConfig,
-        string $entityManagerName
+        string $entityManagerName,
     ): EntityManagerInterface {
         if ($this->doctrineManager->hasManager($entityManagerName)) {
             throw new RuntimeException(sprintf('Entity manager "%s" already exist', $entityManagerName));
         }
 
-        $connection = $this->doctrineManager->getConnection($entityManagerConfig['connection']);
+        $connection = $this->doctrineManager->getConnection($entityManagerConfig[ConfigOptions::CONNECTION]);
 
-        $entityManager = $this->entityManagerFactory->create(
-            $connection,
-            $this->cache,
-            $entityManagerConfig,
-            $proxyConfig
-        );
+        $entityManager = $this->entityManagerFactory->create($connection, $entityManagerConfig, $proxyConfig);
 
         $this->doctrineManager->addManager($entityManagerName, $entityManager);
 

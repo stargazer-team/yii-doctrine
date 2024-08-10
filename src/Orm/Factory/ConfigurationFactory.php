@@ -21,10 +21,11 @@ use Doctrine\Persistence\Mapping\Driver\MappingDriverChain;
 use Doctrine\Persistence\Mapping\Driver\PHPDriver;
 use Doctrine\Persistence\Mapping\Driver\StaticPHPDriver;
 use InvalidArgumentException;
-use Psr\Cache\CacheItemPoolInterface;
 use RuntimeException;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Injector\Injector;
+use Yiisoft\Yii\Doctrine\Cache\CacheCollector;
+use Yiisoft\Yii\Doctrine\Orm\Enum\ConfigOptions;
 use Yiisoft\Yii\Doctrine\Orm\Enum\DriverMappingEnum;
 
 use function sprintf;
@@ -33,6 +34,7 @@ final class ConfigurationFactory
 {
     public function __construct(
         private readonly Aliases $aliases,
+        private readonly CacheCollector $cacheCollector,
         private readonly Injector $injector,
     ) {
     }
@@ -67,86 +69,277 @@ final class ConfigurationFactory
      * } $ormConfig
      * @psalm-param array{auto_generate: bool|null, path: string, namespace: string|null} $proxyConfig
      */
-    public function create(
-        CacheItemPoolInterface $cacheDriver,
-        array $ormConfig,
-        array $proxyConfig
-    ): Configuration {
+    public function create(array $ormConfig, array $proxyConfig): Configuration
+    {
         $configuration = new Configuration();
 
         // naming strategy
-        $this->configureNamingStrategy($configuration, $ormConfig['naming_strategy'] ?? null);
+        $this->configureNamingStrategy($configuration, $ormConfig[ConfigOptions::NAMING_STRATEGY] ?? null);
         // quote strategy
-        $this->configureQuoteStrategy($configuration, $ormConfig['quote_strategy'] ?? null);
+        $this->configureQuoteStrategy($configuration, $ormConfig[ConfigOptions::QUOTE_STRATEGY] ?? null);
 
         // orm cache
-        $configuration->setMetadataCache($cacheDriver);
-        $configuration->setQueryCache($cacheDriver);
-        $configuration->setHydrationCache($cacheDriver);
-        $configuration->setResultCache($cacheDriver);
+        $configuration->setHydrationCache($this->cacheCollector->getHydrationCache());
+        $configuration->setMetadataCache($this->cacheCollector->getMetadataCache());
+        $configuration->setQueryCache($this->cacheCollector->getQueryCache());
+        $configuration->setResultCache($this->cacheCollector->getResultCache());
 
         // proxy
         $configuration->setProxyDir(
-            $this->getProxyDir($proxyConfig['path'] ?? null)
+            $this->getProxyDir($proxyConfig[ConfigOptions::PROXY_PATH] ?? null)
         );
         $configuration->setProxyNamespace(
-            $this->getProxyName($proxyConfig['namespace'] ?? 'Proxy')
+            $this->getProxyName($proxyConfig[ConfigOptions::PROXY_NAMESPACE] ?? 'Proxy')
         );
-        $configuration->setAutoGenerateProxyClasses($proxyConfig['auto_generate'] ?? true);
+        $configuration->setAutoGenerateProxyClasses($proxyConfig[ConfigOptions::PROXY_AUTO_GENERATE] ?? true);
 
         // configure schema ignore classes
-        $this->configureSchemaIgnoreClasses($configuration, $ormConfig['schema_ignore_classes'] ?? []);
+        $this->configureSchemaIgnoreClasses($configuration, $ormConfig[ConfigOptions::SCHEMA_IGNORE_CLASSES] ?? []);
 
         // configure custom datetime function
         $this->configureCustomDatetimeFunctions(
             $configuration,
-            $ormConfig['dql']['custom_datetime_functions'] ?? []
+            $ormConfig[ConfigOptions::DQL][ConfigOptions::DQL_CUSTOM_DATETIME_FUNCTIONS] ?? [],
         );
         // configure custom numeric function
         $this->configureCustomNumericFunctions(
             $configuration,
-            $ormConfig['dql']['custom_numeric_functions'] ?? []
+            $ormConfig[ConfigOptions::DQL][ConfigOptions::DQL_CUSTOM_NUMERIC_FUNCTIONS] ?? [],
         );
         // configure custom string function
         $this->configureCustomStringFunctions(
             $configuration,
-            $ormConfig['dql']['custom_string_functions'] ?? []
+            $ormConfig[ConfigOptions::DQL][ConfigOptions::DQL_CUSTOM_STRING_FUNCTIONS] ?? [],
         );
 
         // configure class metadata factory
-        $this->configureClassMetadataFactoryName($configuration, $ormConfig['class_metadata_factory_name'] ?? null);
+        $this->configureClassMetadataFactoryName(
+            $configuration,
+            $ormConfig[ConfigOptions::CLASS_METADATA_FACTORY_NAME] ?? null,
+        );
 
         // configure default repository class
-        $this->configureDefaultRepositoryClass($configuration, $ormConfig['default_repository_class'] ?? null);
+        $this->configureDefaultRepositoryClass(
+            $configuration,
+            $ormConfig[ConfigOptions::DEFAULT_REPOSITORY_CLASS] ?? null,
+        );
 
         // configure repository factory
-        $this->configureRepositoryFactory($configuration, $ormConfig['repository_factory'] ?? null);
+        $this->configureRepositoryFactory($configuration, $ormConfig[ConfigOptions::REPOSITORY_FACTORY] ?? null);
 
         // configure custom hydration modes
-        $this->configureCustomHydrationModes($configuration, $ormConfig['custom_hydration_modes'] ?? []);
+        $this->configureCustomHydrationModes($configuration, $ormConfig[ConfigOptions::CUSTOM_HYDRATION_MODES] ?? []);
 
         // configure filters
-        $this->configureFilters($configuration, $ormConfig['filters'] ?? []);
+        $this->configureFilters($configuration, $ormConfig[ConfigOptions::FILTERS] ?? []);
 
         // configure entityListenerResolver
-        $this->configureEntityListenerResolver($configuration, $ormConfig['entity_listener_resolver'] ?? null);
+        $this->configureEntityListenerResolver(
+            $configuration,
+            $ormConfig[ConfigOptions::ENTITY_LISTENER_RESOLVER] ?? null
+        );
 
         // configure typed field mapper
-        $this->configureTypedFieldMapper($configuration, $ormConfig['typed_field_mapper'] ?? null);
+        $this->configureTypedFieldMapper($configuration, $ormConfig[ConfigOptions::TYPED_FIELD_MAPPER] ?? null);
 
         // configure fetch mode sub select batch size
         $this->configureFetchModeSubselectBatchSize(
             $configuration,
-            $ormConfig['fetch_mode_sub_select_batch_size'] ?? null
+            $ormConfig[ConfigOptions::FETCH_MODE_SUB_SELECT_BATCH_SIZE] ?? null
         );
 
         // configure default query hints
-        $this->configureDefaultQueryHints($configuration, $ormConfig['default_query_hints'] ?? []);
+        $this->configureDefaultQueryHints($configuration, $ormConfig[ConfigOptions::DEFAULT_QUERY_HINTS] ?? []);
 
         // configure meta data drivers
-        $this->configureMetaDataDrivers($configuration, $ormConfig['mappings'] ?? []);
+        $this->configureMetaDataDrivers($configuration, $ormConfig[ConfigOptions::MAPPINGS] ?? []);
 
         return $configuration;
+    }
+
+    /**
+     * @psalm-param class-string<AbstractClassMetadataFactory>|null $classMetadataFactoryName
+     */
+    private function configureClassMetadataFactoryName(
+        Configuration $configuration,
+        ?string $classMetadataFactoryName,
+    ): void {
+        if (null === $classMetadataFactoryName) {
+            return;
+        }
+
+        $configuration->setClassMetadataFactoryName($classMetadataFactoryName);
+    }
+
+    /**
+     * @psalm-param array<string, callable(string):FunctionNode|class-string<FunctionNode>>|empty $customDatetimeFunctions
+     */
+    private function configureCustomDatetimeFunctions(
+        Configuration $configuration,
+        array $customDatetimeFunctions,
+    ): void {
+        foreach ($customDatetimeFunctions as $name => $className) {
+            $configuration->addCustomDatetimeFunction($name, $className);
+        }
+    }
+
+    /**
+     * @psalm-param array<string, class-string<AbstractHydrator>>|empty $customHydrationModes
+     */
+    private function configureCustomHydrationModes(Configuration $configuration, array $customHydrationModes): void
+    {
+        foreach ($customHydrationModes as $name => $className) {
+            $configuration->addCustomHydrationMode($name, $className);
+        }
+    }
+
+    /**
+     * @psalm-param array<string, callable(string):FunctionNode|class-string<FunctionNode>>|empty $customNumericFunctions
+     */
+    private function configureCustomNumericFunctions(
+        Configuration $configuration,
+        array $customNumericFunctions,
+    ): void {
+        foreach ($customNumericFunctions as $name => $className) {
+            $configuration->addCustomNumericFunction($name, $className);
+        }
+    }
+
+    /**
+     * @psalm-param array<string, callable(string):FunctionNode|class-string<FunctionNode>>|empty $customStringFunctions
+     */
+    private function configureCustomStringFunctions(
+        Configuration $configuration,
+        array $customStringFunctions,
+    ): void {
+        foreach ($customStringFunctions as $name => $className) {
+            $configuration->addCustomStringFunction($name, $className);
+        }
+    }
+
+    /**
+     * @psalm-param array<string, class-string>|empty $defaultQueryHints
+     */
+    private function configureDefaultQueryHints(Configuration $configuration, array $defaultQueryHints): void
+    {
+        $configuration->setDefaultQueryHints($defaultQueryHints);
+    }
+
+    /**
+     * @psalm-param class-string<EntityRepository>|null $defaultRepositoryClass
+     */
+    private function configureDefaultRepositoryClass(
+        Configuration $configuration,
+        ?string $defaultRepositoryClass,
+    ): void {
+        if (null !== $defaultRepositoryClass) {
+            $configuration->setDefaultRepositoryClassName($defaultRepositoryClass);
+        }
+    }
+
+    /**
+     * @psalm-param class-string<EntityListenerResolver>|null $entityListenerResolverClass
+     */
+    private function configureEntityListenerResolver(
+        Configuration $configuration,
+        ?string $entityListenerResolverClass,
+    ): void {
+        if (null === $entityListenerResolverClass) {
+            return;
+        }
+
+        $entityListenerResolver = $this->injector->make($entityListenerResolverClass);
+
+        if (!$entityListenerResolver instanceof EntityListenerResolver) {
+            throw new RuntimeException(
+                sprintf('Class %s not instance %s', $entityListenerResolverClass, EntityListenerResolver::class)
+            );
+        }
+
+        $configuration->setEntityListenerResolver($entityListenerResolver);
+    }
+
+    private function configureFetchModeSubselectBatchSize(
+        Configuration $configuration,
+        ?int $fetchModeSubselectBatchSize,
+    ): void {
+        if (null === $fetchModeSubselectBatchSize) {
+            return;
+        }
+
+        $configuration->setEagerFetchBatchSize($fetchModeSubselectBatchSize);
+    }
+
+    /**
+     * @psalm-param  array<string, class-string<SQLFilter>>|empty $filters
+     */
+    private function configureFilters(Configuration $configuration, array $filters): void
+    {
+        foreach ($filters as $name => $className) {
+            $configuration->addFilter($name, $className);
+        }
+    }
+
+    /**
+     * @psalm-param array<string, array{
+     *     dir: string,
+     *     driver: object<DriverMappingEnum>,
+     *     namespace: string,
+     *     fileExtension:
+     *     string|empty
+     * }>|empty $mappings
+     */
+    private function configureMetaDataDrivers(Configuration $configuration, array $mappings): void
+    {
+        $driverChain = new MappingDriverChain();
+
+        foreach ($mappings as $name => $mapper) {
+            if (!isset($mapper[ConfigOptions::MAPPING_DRIVER])) {
+                throw new InvalidArgumentException('Not found "driver" mapping');
+            }
+
+            if (!isset($mapper[ConfigOptions::MAPPING_DIR])) {
+                throw new InvalidArgumentException('Not found "directory" mapping');
+            }
+
+            if (!isset($mapper[ConfigOptions::MAPPING_NAMESPACE])) {
+                throw new InvalidArgumentException('Not found "namespace" mapping');
+            }
+
+            $dir = $this->aliases->get($mapper[ConfigOptions::MAPPING_DIR]);
+
+            switch ($mapper[ConfigOptions::MAPPING_DRIVER]) {
+                case DriverMappingEnum::XML_MAPPING:
+                    $driver = new SimplifiedXmlDriver(
+                        [
+                            $dir => $mapper[ConfigOptions::MAPPING_NAMESPACE]
+                        ],
+                        $mapper[ConfigOptions::MAPPING_FILE_EXTENSION] ?? SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION
+                    );
+
+                    break;
+                case DriverMappingEnum::ATTRIBUTE_MAPPING:
+                    $driver = new AttributeDriver([$dir]);
+
+                    break;
+                case DriverMappingEnum::PHP_MAPPING:
+                    $driver = new PHPDriver([$dir]);
+
+                    break;
+                case DriverMappingEnum::STATIC_PHP_MAPPING:
+                    $driver = new StaticPHPDriver([$dir]);
+
+                    break;
+                default:
+                    throw new InvalidArgumentException(
+                        'Doctrine driver mapper: "attribute", "php", "static_php", "xml" not found'
+                    );
+            }
+
+            $driverChain->addDriver($driver, $mapper[ConfigOptions::MAPPING_NAMESPACE]);
+        }
+
+        $configuration->setMetadataDriverImpl($driverChain);
     }
 
     /**
@@ -185,96 +378,6 @@ final class ConfigurationFactory
         $configuration->setQuoteStrategy($quoteStrategy);
     }
 
-    private function getProxyDir(?string $proxyPath): string
-    {
-        if (null === $proxyPath) {
-            throw new RuntimeException('Not found path proxies');
-        }
-
-        return $this->aliases->get($proxyPath);
-    }
-
-    private function getProxyName(?string $namespace): string
-    {
-        if (null === $namespace) {
-            throw new InvalidArgumentException('Not found proxies namespace');
-        }
-
-        return $namespace;
-    }
-
-    /**
-     * @param list<class-string>|empty $schemaIgnoreClasses
-     */
-    private function configureSchemaIgnoreClasses(Configuration $configuration, array $schemaIgnoreClasses): void
-    {
-        if (count($schemaIgnoreClasses) > 0) {
-            $configuration->setSchemaIgnoreClasses($schemaIgnoreClasses);
-        }
-    }
-
-    /**
-     * @psalm-param array<string, callable(string):FunctionNode|class-string<FunctionNode>>|empty $customDatetimeFunctions
-     */
-    private function configureCustomDatetimeFunctions(
-        Configuration $configuration,
-        array $customDatetimeFunctions
-    ): void {
-        foreach ($customDatetimeFunctions as $name => $className) {
-            $configuration->addCustomDatetimeFunction($name, $className);
-        }
-    }
-
-    /**
-     * @psalm-param array<string, callable(string):FunctionNode|class-string<FunctionNode>>|empty $customNumericFunctions
-     */
-    private function configureCustomNumericFunctions(
-        Configuration $configuration,
-        array $customNumericFunctions
-    ): void {
-        foreach ($customNumericFunctions as $name => $className) {
-            $configuration->addCustomNumericFunction($name, $className);
-        }
-    }
-
-    /**
-     * @psalm-param array<string, callable(string):FunctionNode|class-string<FunctionNode>>|empty $customStringFunctions
-     */
-    private function configureCustomStringFunctions(
-        Configuration $configuration,
-        array $customStringFunctions
-    ): void {
-        foreach ($customStringFunctions as $name => $className) {
-            $configuration->addCustomStringFunction($name, $className);
-        }
-    }
-
-    /**
-     * @psalm-param class-string<AbstractClassMetadataFactory>|null $classMetadataFactoryName
-     */
-    private function configureClassMetadataFactoryName(
-        Configuration $configuration,
-        ?string $classMetadataFactoryName
-    ): void {
-        if (null === $classMetadataFactoryName) {
-            return;
-        }
-
-        $configuration->setClassMetadataFactoryName($classMetadataFactoryName);
-    }
-
-    /**
-     * @psalm-param class-string<EntityRepository>|null $defaultRepositoryClass
-     */
-    private function configureDefaultRepositoryClass(
-        Configuration $configuration,
-        ?string $defaultRepositoryClass
-    ): void {
-        if (null !== $defaultRepositoryClass) {
-            $configuration->setDefaultRepositoryClassName($defaultRepositoryClass);
-        }
-    }
-
     /**
      * @psalm-param class-string<RepositoryFactory>|null $repositoryFactoryClass
      */
@@ -296,45 +399,13 @@ final class ConfigurationFactory
     }
 
     /**
-     * @psalm-param array<string, class-string<AbstractHydrator>>|empty $customHydrationModes
+     * @param list<class-string>|empty $schemaIgnoreClasses
      */
-    private function configureCustomHydrationModes(Configuration $configuration, array $customHydrationModes): void
+    private function configureSchemaIgnoreClasses(Configuration $configuration, array $schemaIgnoreClasses): void
     {
-        foreach ($customHydrationModes as $name => $className) {
-            $configuration->addCustomHydrationMode($name, $className);
+        if (count($schemaIgnoreClasses) > 0) {
+            $configuration->setSchemaIgnoreClasses($schemaIgnoreClasses);
         }
-    }
-
-    /**
-     * @psalm-param  array<string, class-string<SQLFilter>>|empty $filters
-     */
-    private function configureFilters(Configuration $configuration, array $filters): void
-    {
-        foreach ($filters as $name => $className) {
-            $configuration->addFilter($name, $className);
-        }
-    }
-
-    /**
-     * @psalm-param class-string<EntityListenerResolver>|null $entityListenerResolverClass
-     */
-    private function configureEntityListenerResolver(
-        Configuration $configuration,
-        ?string $entityListenerResolverClass
-    ): void {
-        if (null === $entityListenerResolverClass) {
-            return;
-        }
-
-        $entityListenerResolver = $this->injector->make($entityListenerResolverClass);
-
-        if (!$entityListenerResolver instanceof EntityListenerResolver) {
-            throw new RuntimeException(
-                sprintf('Class %s not instance %s', $entityListenerResolverClass, EntityListenerResolver::class)
-            );
-        }
-
-        $configuration->setEntityListenerResolver($entityListenerResolver);
     }
 
     /**
@@ -357,84 +428,21 @@ final class ConfigurationFactory
         $configuration->setTypedFieldMapper($typedFieldMapper);
     }
 
-    private function configureFetchModeSubselectBatchSize(
-        Configuration $configuration,
-        ?int $fetchModeSubselectBatchSize
-    ): void {
-        if (null === $fetchModeSubselectBatchSize) {
-            return;
+    private function getProxyDir(?string $proxyPath): string
+    {
+        if (null === $proxyPath) {
+            throw new RuntimeException('Not found path proxies');
         }
 
-        $configuration->setEagerFetchBatchSize($fetchModeSubselectBatchSize);
+        return $this->aliases->get($proxyPath);
     }
 
-    /**
-     * @psalm-param array<string, class-string>|empty $defaultQueryHints
-     */
-    private function configureDefaultQueryHints(Configuration $configuration, array $defaultQueryHints): void
+    private function getProxyName(?string $namespace): string
     {
-        $configuration->setDefaultQueryHints($defaultQueryHints);
-    }
-
-    /**
-     * @psalm-param array<string, array{
-     *     dir: string,
-     *     driver: object<DriverMappingEnum>,
-     *     namespace: string,
-     *     fileExtension:
-     *     string|empty
-     * }>|empty $mappings
-     */
-    private function configureMetaDataDrivers(Configuration $configuration, array $mappings): void
-    {
-        $driverChain = new MappingDriverChain();
-
-        foreach ($mappings as $name => $mapper) {
-            if (!isset($mapper['driver'])) {
-                throw new InvalidArgumentException('Not found "driver" mapping');
-            }
-
-            if (!isset($mapper['dir'])) {
-                throw new InvalidArgumentException('Not found "directory" mapping');
-            }
-
-            if (!isset($mapper['namespace'])) {
-                throw new InvalidArgumentException('Not found "namespace" mapping');
-            }
-
-            $dir = $this->aliases->get($mapper['dir']);
-
-            switch ($mapper['driver']) {
-                case DriverMappingEnum::XML_MAPPING:
-                    $driver = new SimplifiedXmlDriver(
-                        [
-                            $dir => $mapper['namespace']
-                        ],
-                        $mapper['fileExtension'] ?? SimplifiedXmlDriver::DEFAULT_FILE_EXTENSION
-                    );
-
-                    break;
-                case DriverMappingEnum::ATTRIBUTE_MAPPING:
-                    $driver = new AttributeDriver([$dir]);
-
-                    break;
-                case DriverMappingEnum::PHP_MAPPING:
-                    $driver = new PHPDriver([$dir]);
-
-                    break;
-                case DriverMappingEnum::STATIC_PHP_MAPPING:
-                    $driver = new StaticPHPDriver([$dir]);
-
-                    break;
-                default:
-                    throw new InvalidArgumentException(
-                        'Doctrine driver mapper: "attribute", "php", "static_php", "xml" not found'
-                    );
-            }
-
-            $driverChain->addDriver($driver, $mapper['namespace']);
+        if (null === $namespace) {
+            throw new InvalidArgumentException('Not found proxies namespace');
         }
 
-        $configuration->setMetadataDriverImpl($driverChain);
+        return $namespace;
     }
 }

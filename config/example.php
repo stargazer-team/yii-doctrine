@@ -2,43 +2,43 @@
 
 declare(strict_types=1);
 
-use Doctrine\DBAL\Schema\Sequence;
 use Doctrine\ORM\Events;
-use Doctrine\ORM\Query;
-use Doctrine\ORM\Repository\DefaultRepositoryFactory;
+use Yiisoft\Yii\Doctrine\Dbal\Enum\ConfigOptions as DbalConfigOption;
 use Yiisoft\Yii\Doctrine\DoctrineManager;
+use Yiisoft\Yii\Doctrine\Migrations\Enum\ConfigOptions as MigrationConfigOptions;
+use Yiisoft\Yii\Doctrine\Orm\Enum\ConfigOptions as OrmConfigOptions;
 use Yiisoft\Yii\Doctrine\Orm\Enum\DriverMappingEnum;
 
 return [
     'yiisoft/yii-doctrine' => [
-        'dbal' => [
+        DbalConfigOption::DBAL => [
             'default' => [
                 // check params https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/configuration.html
-                'params' => [
+                DbalConfigOption::PARAMS => [
                     'driver' => 'pdo_pgsql',
                     'dbname' => 'dbname',
                     'host' => 'localhost',
                     'password' => 'secret',
                     'user' => 'postgres',
                 ],
-                'custom_types' => [
+                DbalConfigOption::CUSTOM_TYPES => [
 //                    UuidType::NAME => UuidType::class
                 ],
-                'auto_commit' => false,
-//                'schema_assets_filter' => static function (string|Sequence $table): bool {
+                DbalConfigOption::AUTO_COMMIT => false,
+//                DbalConfigOption::SCHEMA_ASSETS_FILTER => static function (string|Sequence $table): bool {
 //                    if (is_string($table)) {
 //                        return $table === 'geo_locations';
 //                    }
 //
 //                    return true;
 //                },
-                'middlewares' => [
+                DbalConfigOption::MIDDLEWARES => [
                     // logger middleware
                     Doctrine\DBAL\Logging\Middleware::class
                 ]
             ],
             'mysql' => [
-                'params' => [
+                DbalConfigOption::PARAMS => [
                     'driver' => 'pdo_mysql',
                     'dbname' => 'dbname',
                     'host' => 'localhost',
@@ -47,69 +47,70 @@ return [
                 ],
             ]
         ],
-        'orm' => [
-            'proxies' => [
-                'namespace' => 'Proxies',
-                'path' => '@runtime/cache/doctrine/proxy',
-                'auto_generate' => true
+        OrmConfigOptions::ORM => [
+            OrmConfigOptions::PROXIES => [
+                OrmConfigOptions::PROXY_NAMESPACE => 'Proxies',
+                OrmConfigOptions::PROXY_PATH => '@runtime/cache/doctrine/proxy',
+                OrmConfigOptions::PROXY_AUTO_GENERATE => true
             ],
-            'default_entity_manager' => DoctrineManager::DEFAULT_ENTITY_MANAGER,
-            'entity_managers' => [
+            OrmConfigOptions::DEFAULT_ENTITY_MANAGER => DoctrineManager::DEFAULT_ENTITY_MANAGER,
+            OrmConfigOptions::ENTITY_MANAGERS => [
                 'default' => [
-                    'connection' => 'default',
-//                  'naming_strategy' => NamingStrategy::class,
-//                  'class_metadata_factory_name' => 'MetadataFactory::class',
-//                  'default_repository_class' => 'DefaultRepository::class',
-//                  'schema_ignore_classes' => [],
-//                  'entity_listener_resolver' => DefaultEntityListenerResolver::class,
-//                  'typed_field_mapper' => DefaultTypedFieldMapper::class,
-//                  'fetch_mode_sub_select_batch_size' => 100,
-//                  'repository_factory' => DefaultRepositoryFactory::class,
-//                  'default_query_hints' => [
+                    OrmConfigOptions::CONNECTION => 'default',
+//                    OrmConfigOptions::QUOTE_STRATEGY => DefaultQuoteStrategy::class,
+//                  OrmConfigOptions::NAMING_STRATEGY => NamingStrategy::class,
+//                  OrmConfigOptions::CLASS_METADATA_FACTORY_NAME => 'MetadataFactory::class',
+//                  OrmConfigOptions::DEFAULT_REPOSITORY_CLASS => 'DefaultRepository::class',
+//                  OrmConfigOptions::SCHEMA_IGNORE_CLASSES => [],
+//                  OrmConfigOptions::ENTITY_LISTENER_RESOLVER => DefaultEntityListenerResolver::class,
+//                  OrmConfigOptions::TYPED_FIELD_MAPPER => DefaultTypedFieldMapper::class,
+//                  OrmConfigOptions::FETCH_MODE_SUB_SELECT_BATCH_SIZE => 100,
+//                  OrmConfigOptions::REPOSITORY_FACTORY => DefaultRepositoryFactory::class,
+//                  OrmConfigOptions::DEFAULT_QUERY_HINTS => [
 //                      Query::HINT_CUSTOM_OUTPUT_WALKER => Query\SqlWalker::class,
 //                   ],
-                    'mappings' => [
+                    OrmConfigOptions::MAPPINGS => [
                         'User' => [
-                            'dir' => '@src/User/Entity',
-                            'driver' => DriverMappingEnum::ATTRIBUTE_MAPPING,
-                            'namespace' => 'App\User\Entity',
+                            OrmConfigOptions::MAPPING_DIR => '@src/User/Entity',
+                            OrmConfigOptions::MAPPING_DRIVER => DriverMappingEnum::ATTRIBUTE_MAPPING,
+                            OrmConfigOptions::MAPPING_NAMESPACE => 'App\User\Entity',
                         ],
                     ],
-                    'dql' => [
-                        'custom_datetime_functions' => [
+                    OrmConfigOptions::DQL => [
+                        OrmConfigOptions::DQL_CUSTOM_DATETIME_FUNCTIONS => [
 //                            'ADDTIME' => AddTime::class
                         ],
-                        'custom_numeric_functions' => [
+                        OrmConfigOptions::DQL_CUSTOM_NUMERIC_FUNCTIONS => [
 //                            'CEIL' => Ceil::class
                         ],
-                        'custom_string_functions' => [
+                        OrmConfigOptions::DQL_CUSTOM_STRING_FUNCTIONS => [
 //                            'MD5' => Md5::class
                         ],
                     ],
-                    'custom_hydration_modes' => [
+                    OrmConfigOptions::CUSTOM_HYDRATION_MODES => [
                         // HydrationMode::class
                     ],
-                    'events' => [
-                        'listeners' => [
+                    OrmConfigOptions::EVENTS => [
+                        OrmConfigOptions::EVENTS_LISTENERS => [
                             Events::preFlush => [
 //                            EventOrmListener::class
                             ],
                         ],
-                        'subscribers' => [
+                        OrmConfigOptions::EVENTS_SUBSCRIBERS => [
 //                        EventOrmSubscriber::class,
                         ]
                     ],
-                    'filters' => [
+                    OrmConfigOptions::FILTERS => [
                         // Filter::class,
                     ],
                 ],
                 'mysql' => [
-                    'connection' => 'mysql',
-                    'mappings' => [
+                    OrmConfigOptions::CONNECTION => 'mysql',
+                    OrmConfigOptions::MAPPINGS => [
                         'User' => [
-                            'dir' => '@src/Mysql/User/Entity',
-                            'driver' => DriverMappingEnum::ATTRIBUTE_MAPPING,
-                            'namespace' => 'App\Mysql\User\Entity',
+                            OrmConfigOptions::MAPPING_DIR => '@src/Mysql/User/Entity',
+                            OrmConfigOptions::MAPPING_DRIVER => DriverMappingEnum::ATTRIBUTE_MAPPING,
+                            OrmConfigOptions::MAPPING_NAMESPACE => 'App\Mysql\User\Entity',
                         ],
                     ],
                 ]
@@ -119,40 +120,40 @@ return [
     // configuration params https://www.doctrine-project.org/projects/doctrine-migrations/en/3.6/reference/configuration.html#configuration
     'yiisoft/yii-doctrine-migrations' => [
         'default' => [
-            'table_storage' => [
-                'table_name' => 'postgres_migration_versions',
-                'version_column_name' => 'version',
-                'version_column_length' => 1024,
-                'executed_at_column_name' => 'executed_at',
-                'execution_time_column_name' => 'execution_time',
+            MigrationConfigOptions::TABLE_STORAGE => [
+                MigrationConfigOptions::TABLE_NAME => 'postgres_migration_versions',
+                MigrationConfigOptions::VERSION_COLUMN_NAME => 'version',
+                MigrationConfigOptions::VERSION_COLUMN_LENGTH => 1024,
+                MigrationConfigOptions::EXECUTED_AT_COLUMN_NAME => 'executed_at',
+                MigrationConfigOptions::EXECUTION_TIME_COLUMN_NAME => 'execution_time',
             ],
-            'migrations_paths' => [
+            MigrationConfigOptions::MIGRATIONS_PATHS => [
                 'App\Migrations\Postgres' => '@src/Migrations/Postgres',
             ],
-            'all_or_nothing' => true,
-            'check_database_platform' => true,
+            MigrationConfigOptions::ALL_OR_NOTHING => true,
+            MigrationConfigOptions::CHECK_DATABASE_PLATFORM => true,
             // if using only dbal
-//        'connection' => 'default',
+//        MigrationConfigOptions::CONNECTION => 'default',
             // if using only orm entity manager
-            'em' => 'default',
+            MigrationConfigOptions::EM => 'default',
         ],
         'mysql' => [
-            'table_storage' => [
-                'table_name' => 'mysql_migration_versions',
-                'version_column_name' => 'version',
-                'version_column_length' => 1024,
-                'executed_at_column_name' => 'executed_at',
-                'execution_time_column_name' => 'execution_time',
+            MigrationConfigOptions::TABLE_STORAGE => [
+                MigrationConfigOptions::TABLE_NAME => 'mysql_migration_versions',
+                MigrationConfigOptions::VERSION_COLUMN_NAME => 'version',
+                MigrationConfigOptions::VERSION_COLUMN_LENGTH => 1024,
+                MigrationConfigOptions::EXECUTED_AT_COLUMN_NAME => 'executed_at',
+                MigrationConfigOptions::EXECUTION_TIME_COLUMN_NAME => 'execution_time',
             ],
-            'migrations_paths' => [
+            MigrationConfigOptions::MIGRATIONS_PATHS => [
                 'App\Migrations\Mysql' => '@src/Migrations/Mysql',
             ],
-            'all_or_nothing' => true,
-            'check_database_platform' => true,
+            MigrationConfigOptions::ALL_OR_NOTHING => true,
+            MigrationConfigOptions::CHECK_DATABASE_PLATFORM => true,
             // if using only dbal
 //        'connection' => 'mysql',
             // if using only orm entity manager
-            'em' => 'mysql',
+            MigrationConfigOptions::EM => 'mysql',
         ],
     ],
 ];

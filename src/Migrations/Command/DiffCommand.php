@@ -8,18 +8,14 @@ use Doctrine\Migrations\Generator\Exception\NoChangesDetected;
 use Doctrine\Migrations\Metadata\AvailableMigrationsList;
 use Doctrine\Migrations\Metadata\ExecutedMigrationsList;
 use Doctrine\Migrations\Tools\Console\Exception\InvalidOptionUsage;
-use OutOfBoundsException;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Yiisoft\Yii\Console\ExitCode;
 
 use function addslashes;
-use function assert;
 use function count;
 use function filter_var;
-use function is_string;
-use function key;
 use function sprintf;
 
 use const FILTER_VALIDATE_BOOLEAN;
@@ -89,10 +85,8 @@ EOT
     /**
      * @throws InvalidOptionUsage
      */
-    protected function execute(
-        InputInterface $input,
-        OutputInterface $output
-    ): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $filterExpression = (string)$input->getOption('filter-expression');
 
         if ($filterExpression === '') {
@@ -105,26 +99,8 @@ EOT
         $checkDbPlatform = filter_var($input->getOption('check-database-platform'), FILTER_VALIDATE_BOOLEAN);
         /** @var bool $fromEmptySchema */
         $fromEmptySchema = $input->getOption('from-empty-schema');
-        /** @var string $namespace */
-        $namespace = $input->getOption('namespace');
 
-        if ($namespace === '') {
-            $namespace = null;
-        }
-
-        $configuration = $this
-            ->getDependencyFactory()
-            ->getConfiguration();
-
-        $dirs = $configuration->getMigrationDirectories();
-
-        if ($namespace === null) {
-            $namespace = key($dirs);
-        } elseif (!isset($dirs[$namespace])) {
-            throw new OutOfBoundsException(sprintf('Path not defined for the namespace %s', $namespace));
-        }
-
-        assert(is_string($namespace));
+        $namespace = $this->getNamespace($input, $output);
 
         $statusCalculator = $this
             ->getDependencyFactory()
@@ -136,7 +112,7 @@ EOT
         if (!$this->checkNewMigrationsOrExecutedUnavailable(
             $newMigrations,
             $executedUnavailableMigrations,
-            $input
+            $input,
         )) {
             $this->io->error('Migration cancelled!');
 
@@ -159,7 +135,7 @@ EOT
                 false,
                 $lineLength,
                 $checkDbPlatform,
-                $fromEmptySchema
+                $fromEmptySchema,
             );
         } catch (NoChangesDetected $exception) {
             if ($allowEmptyDiff) {
@@ -194,7 +170,7 @@ EOT
     private function checkNewMigrationsOrExecutedUnavailable(
         AvailableMigrationsList $newMigrations,
         ExecutedMigrationsList $executedUnavailableMigrations,
-        InputInterface $input
+        InputInterface $input,
     ): bool {
         if (count($newMigrations) === 0 && count($executedUnavailableMigrations) === 0) {
             return true;
