@@ -16,6 +16,7 @@ use Symfony\Component\Cache\Adapter\NullAdapter;
 use Symfony\Component\Cache\Adapter\RedisAdapter;
 use Symfony\Component\Cache\Exception\CacheException;
 use Yiisoft\Yii\Doctrine\Cache\Enum\CacheAdapterEnum;
+use Yiisoft\Yii\Doctrine\Cache\Enum\ConfigOptions;
 
 use function extension_loaded;
 
@@ -35,19 +36,19 @@ final class CacheFactory
      */
     public function create(array $cacheConfig): CacheItemPoolInterface
     {
-        $cacheNamespace = $cacheConfig['namespace'] ?? self::CACHE_NAMESPACE;
+        $cacheNamespace = $cacheConfig[ConfigOptions::NAMESPACE] ?? self::CACHE_NAMESPACE;
 
-        if (empty($cacheConfig['driver'])) {
+        if (empty($cacheConfig[ConfigOptions::DRIVER])) {
             return new NullAdapter();
         }
 
-        switch ($cacheConfig['driver']) {
+        switch ($cacheConfig[ConfigOptions::DRIVER]) {
             case CacheAdapterEnum::ARRAY_ADAPTER:
                 $cache = new ArrayAdapter();
 
                 break;
             case CacheAdapterEnum::FILE_ADAPTER:
-                $path = $cacheConfig['path'] ?? null;
+                $path = $cacheConfig[ConfigOptions::PATH] ?? null;
 
                 if (null === $path) {
                     throw new InvalidArgumentException('Not found path cache dir');
@@ -61,13 +62,13 @@ final class CacheFactory
                     throw new InvalidArgumentException('Cache provider "redis" don`t load extension');
                 }
 
-                $host = $cacheConfig['server']['host'] ?? null;
+                $host = $cacheConfig[ConfigOptions::SERVER][ConfigOptions::HOST] ?? null;
 
                 if (null === $host) {
                     throw new InvalidArgumentException('Not found redis host');
                 }
 
-                $port = $cacheConfig['server']['port'] ?? null;
+                $port = $cacheConfig[ConfigOptions::SERVER][ConfigOptions::PORT] ?? null;
 
                 if (null === $port) {
                     throw new InvalidArgumentException('Not found redis port');
@@ -84,13 +85,13 @@ final class CacheFactory
                     throw new InvalidArgumentException('Cache provider "memcached" don`t load extension');
                 }
 
-                $host = $cacheConfig['server']['host'] ?? null;
+                $host = $cacheConfig[ConfigOptions::SERVER][ConfigOptions::HOST] ?? null;
 
                 if (null === $host) {
                     throw new InvalidArgumentException('Not found redis host');
                 }
 
-                $port = $cacheConfig['server']['port'] ?? null;
+                $port = $cacheConfig[ConfigOptions::SERVER][ConfigOptions::PORT] ?? null;
 
                 if (null === $port) {
                     throw new InvalidArgumentException('Not found redis port');

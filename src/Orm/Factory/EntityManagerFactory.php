@@ -17,8 +17,8 @@ use Doctrine\ORM\Query\AST\Functions\FunctionNode;
 use Doctrine\ORM\Query\Filter\SQLFilter;
 use Doctrine\ORM\Repository\RepositoryFactory;
 use Doctrine\Persistence\Mapping\AbstractClassMetadataFactory;
-use Psr\Cache\CacheItemPoolInterface;
 use Yiisoft\Yii\Doctrine\EventManager\EventManagerFactory;
+use Yiisoft\Yii\Doctrine\Orm\Enum\ConfigOptions;
 use Yiisoft\Yii\Doctrine\Orm\Enum\DriverMappingEnum;
 
 final class EntityManagerFactory
@@ -62,17 +62,15 @@ final class EntityManagerFactory
      */
     public function create(
         Connection $connection,
-        CacheItemPoolInterface $cache,
         array $entityManagerConfig,
         array $proxyConfig
     ): EntityManagerInterface {
         $configuration = $this->configurationFactory->create(
-            $cache,
             $entityManagerConfig,
-            $proxyConfig
+            $proxyConfig,
         );
 
-        $eventManager = $this->eventManagerFactory->create($entityManagerConfig['events'] ?? []);
+        $eventManager = $this->eventManagerFactory->create($entityManagerConfig[ConfigOptions::EVENTS] ?? []);
 
         return new EntityManager($connection, $configuration, $eventManager);
     }

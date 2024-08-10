@@ -46,6 +46,15 @@ final class DoctrineManager implements ManagerRegistry
         $this->connections[$name] = $connection;
     }
 
+    public function addManager(string $name, EntityManagerInterface $entityManager): void
+    {
+        if (isset($this->managers[$name])) {
+            throw new RuntimeException(sprintf('Entity manager by name "%s" already exists', $name));
+        }
+
+        $this->managers[$name] = $entityManager;
+    }
+
     public function closeConnection(string $name): void
     {
         $connection = $this->connections[$name] ?? null;
@@ -57,80 +66,6 @@ final class DoctrineManager implements ManagerRegistry
         $connection->close();
 
         unset($this->connections[$name]);
-    }
-
-    public function getConnection($name = null): Connection
-    {
-        if (null === $name) {
-            $name = $this->getDefaultConnectionName();
-        }
-
-        $connection = $this->connections[$name] ?? null;
-
-        if (null === $connection) {
-            throw new RuntimeException(sprintf('Not found connection by name "%s"', $name));
-        }
-
-        return $connection;
-    }
-
-    public function getDefaultConnectionName(): string
-    {
-        return $this->defaultConnection;
-    }
-
-    public function addManager(string $name, EntityManagerInterface $entityManager): void
-    {
-        if (isset($this->managers[$name])) {
-            throw new RuntimeException(sprintf('Entity manager by name "%s" already exists', $name));
-        }
-
-        $this->managers[$name] = $entityManager;
-    }
-
-    public function hasConnection(string $name): bool
-    {
-        return isset($this->connections[$name]);
-    }
-
-    public function hasManager(string $name): bool
-    {
-        return isset($this->managers[$name]);
-    }
-
-    public function getConnections(): array
-    {
-        return $this->connections;
-    }
-
-    /**
-     * @psalm-return list<array-key>
-     */
-    public function getConnectionNames(): array
-    {
-        return array_keys($this->connections);
-    }
-
-    public function resetManager(?string $name = null): ObjectManager
-    {
-        if (null === $name) {
-            $name = $this->getDefaultManagerName();
-        }
-
-        $entityManager = $this->managers[$name] ?? null;
-
-        if (null === $entityManager) {
-            throw new RuntimeException(sprintf('Not found entity manager "%s"', $name));
-        }
-
-        $entityManager->clear();
-
-        return $entityManager;
-    }
-
-    public function getDefaultManagerName(): string
-    {
-        return $this->defaultManager;
     }
 
     public function closeManager(string $name): void
@@ -146,10 +81,10 @@ final class DoctrineManager implements ManagerRegistry
         unset($this->managers[$name]);
     }
 
-    public function resetAllManager(): void
+    public function flushAllManager(): void
     {
         foreach ($this->managers as $manager) {
-            $manager->clear();
+            $manager->flush();
         }
     }
 
@@ -168,40 +103,42 @@ final class DoctrineManager implements ManagerRegistry
         $entityManager->flush();
     }
 
-    public function flushAllManager(): void
+    public function getConnection($name = null): Connection
     {
-        foreach ($this->managers as $manager) {
-            $manager->flush();
+        if (null === $name) {
+            $name = $this->getDefaultConnectionName();
         }
+
+        $connection = $this->connections[$name] ?? null;
+
+        if (null === $connection) {
+            throw new RuntimeException(sprintf('Not found connection by name "%s"', $name));
+        }
+
+        return $connection;
     }
 
     /**
      * @psalm-return list<array-key>
      */
-    public function getManagerNames(): array
+    public function getConnectionNames(): array
     {
-        return array_keys($this->managers);
+        return array_keys($this->connections);
     }
 
-    public function getRepository($persistentObject, $persistentManagerName = null): EntityRepository|ObjectRepository
+    public function getConnections(): array
     {
-        return $this
-            ->selectManager($persistentObject, $persistentManagerName)
-            ->getRepository($persistentObject);
+        return $this->connections;
     }
 
-    /**
-     * @psalm-param class-string $persistentObject
-     */
-    private function selectManager(
-        string $persistentObject,
-        ?string $persistentManagerName = null
-    ): ObjectManager {
-        if ($persistentManagerName !== null) {
-            return $this->getManager($persistentManagerName);
-        }
+    public function getDefaultConnectionName(): string
+    {
+        return $this->defaultConnection;
+    }
 
-        return $this->getManagerForClass($persistentObject) ?? $this->getManager();
+    public function getDefaultManagerName(): string
+    {
+        return $this->defaultManager;
     }
 
     /**
@@ -250,10 +187,73 @@ final class DoctrineManager implements ManagerRegistry
     }
 
     /**
+     * @psalm-return list<array-key>
+     */
+    public function getManagerNames(): array
+    {
+        return array_keys($this->managers);
+    }
+
+    /**
      * @psalm-return array<string, ObjectManager>
      */
     public function getManagers(): array
     {
         return $this->managers;
+    }
+
+    public function getRepository($persistentObject, $persistentManagerName = null): EntityRepository|ObjectRepository
+    {
+        return $this
+            ->selectManager($persistentObject, $persistentManagerName)
+            ->getRepository($persistentObject);
+    }
+
+    public function hasConnection(string $name): bool
+    {
+        return isset($this->connections[$name]);
+    }
+
+    public function hasManager(string $name): bool
+    {
+        return isset($this->managers[$name]);
+    }
+
+    public function resetAllManager(): void
+    {
+        foreach ($this->managers as $manager) {
+            $manager->clear();
+        }
+    }
+
+    public function resetManager(?string $name = null): ObjectManager
+    {
+        if (null === $name) {
+            $name = $this->getDefaultManagerName();
+        }
+
+        $entityManager = $this->managers[$name] ?? null;
+
+        if (null === $entityManager) {
+            throw new RuntimeException(sprintf('Not found entity manager "%s"', $name));
+        }
+
+        $entityManager->clear();
+
+        return $entityManager;
+    }
+
+    /**
+     * @psalm-param class-string $persistentObject
+     */
+    private function selectManager(
+        string $persistentObject,
+        ?string $persistentManagerName = null
+    ): ObjectManager {
+        if ($persistentManagerName !== null) {
+            return $this->getManager($persistentManagerName);
+        }
+
+        return $this->getManagerForClass($persistentObject) ?? $this->getManager();
     }
 }

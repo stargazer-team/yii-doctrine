@@ -258,9 +258,38 @@ EOT
         return ExitCode::OK;
     }
 
-    private function isPathWritable(string $path): bool
-    {
-        return is_writable($path) || is_dir($path) || is_writable(dirname($path));
+    private function checkExecutedUnavailableMigrations(
+        ExecutedMigrationsList $executedUnavailableMigrations,
+        InputInterface $input
+    ): bool {
+        if (count($executedUnavailableMigrations) !== 0) {
+            $this->io->warning(
+                sprintf(
+                    'You have %s previously executed migrations in the database that are not registered migrations.',
+                    count($executedUnavailableMigrations)
+                )
+            );
+
+            foreach ($executedUnavailableMigrations->getItems() as $executedUnavailableMigration) {
+                $this->io->text(
+                    sprintf(
+                        '<comment>>></comment> %s (<comment>%s</comment>)',
+                        $executedUnavailableMigration->getExecutedAt()?->format('Y-m-d H:i:s'),
+                        $executedUnavailableMigration->getVersion()
+                    )
+                );
+            }
+
+            $question = 'Are you sure you wish to continue?';
+
+            if (!$this->canExecute($question, $input)) {
+                $this->io->error('Migration cancelled!');
+
+                return false;
+            }
+        }
+
+        return true;
     }
 
     private function exitForAlias(string $versionAlias): int
@@ -299,37 +328,8 @@ EOT
         return ExitCode::OK;
     }
 
-    private function checkExecutedUnavailableMigrations(
-        ExecutedMigrationsList $executedUnavailableMigrations,
-        InputInterface $input
-    ): bool {
-        if (count($executedUnavailableMigrations) !== 0) {
-            $this->io->warning(
-                sprintf(
-                    'You have %s previously executed migrations in the database that are not registered migrations.',
-                    count($executedUnavailableMigrations)
-                )
-            );
-
-            foreach ($executedUnavailableMigrations->getItems() as $executedUnavailableMigration) {
-                $this->io->text(
-                    sprintf(
-                        '<comment>>></comment> %s (<comment>%s</comment>)',
-                        $executedUnavailableMigration->getExecutedAt()?->format('Y-m-d H:i:s'),
-                        $executedUnavailableMigration->getVersion()
-                    )
-                );
-            }
-
-            $question = 'Are you sure you wish to continue?';
-
-            if (!$this->canExecute($question, $input)) {
-                $this->io->error('Migration cancelled!');
-
-                return false;
-            }
-        }
-
-        return true;
+    private function isPathWritable(string $path): bool
+    {
+        return is_writable($path) || is_dir($path) || is_writable(dirname($path));
     }
 }

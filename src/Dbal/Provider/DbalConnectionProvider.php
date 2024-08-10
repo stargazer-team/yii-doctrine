@@ -15,13 +15,13 @@ final class DbalConnectionProvider implements ConnectionProvider
     ) {
     }
 
-    public function getDefaultConnection(): Connection
-    {
-        return $this->doctrineManager->getConnection();
-    }
-
     public function getConnection(string $name): Connection
     {
         return $this->doctrineManager->getConnection($name);
+    }
+
+    public function getDefaultConnection(): Connection
+    {
+        return $this->doctrineManager->getConnection();
     }
 }

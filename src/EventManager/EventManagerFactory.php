@@ -8,6 +8,7 @@ use Doctrine\Common\EventManager;
 use Doctrine\Common\EventSubscriber;
 use RuntimeException;
 use Yiisoft\Injector\Injector;
+use Yiisoft\Yii\Doctrine\Orm\Enum\ConfigOptions;
 
 use function sprintf;
 
@@ -22,9 +23,9 @@ final class EventManagerFactory
     {
         $eventManager = new EventManager();
 
-        $this->configureListener($eventManager, $eventConfig['listeners'] ?? []);
+        $this->configureListener($eventManager, $eventConfig[ConfigOptions::EVENTS_LISTENERS] ?? []);
 
-        $this->configureSubscribers($eventManager, $eventConfig['subscribers'] ?? []);
+        $this->configureSubscribers($eventManager, $eventConfig[ConfigOptions::EVENTS_SUBSCRIBERS] ?? []);
 
         return $eventManager;
     }
