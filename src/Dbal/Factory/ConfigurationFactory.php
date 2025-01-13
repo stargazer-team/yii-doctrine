@@ -52,7 +52,10 @@ final class ConfigurationFactory
 
         $this->configureDisableTypeComments($configuration, $dbalConfig[ConfigOptions::DISABLE_TYPE_COMMENTS] ?? null);
 
-        $this->configureSchemaManagerFactory($configuration, $dbalConfig[ConfigOptions::SCHEMA_MANAGER_FACTORY] ?? []);
+        $this->configureSchemaManagerFactory(
+            $configuration,
+            $dbalConfig[ConfigOptions::SCHEMA_MANAGER_FACTORY] ?? null,
+        );
 
         return $configuration;
     }
