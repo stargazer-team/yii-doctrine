@@ -86,10 +86,10 @@ final class ConfigurationFactory
 
         // proxy
         $configuration->setProxyDir(
-            $this->getProxyDir($proxyConfig[ConfigOptions::PROXY_PATH] ?? null)
+            $this->getProxyDir($proxyConfig[ConfigOptions::PROXY_PATH] ?? null),
         );
         $configuration->setProxyNamespace(
-            $this->getProxyName($proxyConfig[ConfigOptions::PROXY_NAMESPACE] ?? 'Proxy')
+            $this->getProxyName($proxyConfig[ConfigOptions::PROXY_NAMESPACE] ?? 'Proxy'),
         );
         $configuration->setAutoGenerateProxyClasses($proxyConfig[ConfigOptions::PROXY_AUTO_GENERATE] ?? true);
 
@@ -136,7 +136,7 @@ final class ConfigurationFactory
         // configure entityListenerResolver
         $this->configureEntityListenerResolver(
             $configuration,
-            $ormConfig[ConfigOptions::ENTITY_LISTENER_RESOLVER] ?? null
+            $ormConfig[ConfigOptions::ENTITY_LISTENER_RESOLVER] ?? null,
         );
 
         // configure typed field mapper
@@ -145,7 +145,7 @@ final class ConfigurationFactory
         // configure fetch mode sub select batch size
         $this->configureFetchModeSubselectBatchSize(
             $configuration,
-            $ormConfig[ConfigOptions::FETCH_MODE_SUB_SELECT_BATCH_SIZE] ?? null
+            $ormConfig[ConfigOptions::FETCH_MODE_SUB_SELECT_BATCH_SIZE] ?? null,
         );
 
         // configure default query hints
@@ -153,6 +153,12 @@ final class ConfigurationFactory
 
         // configure meta data drivers
         $this->configureMetaDataDrivers($configuration, $ormConfig[ConfigOptions::MAPPINGS] ?? []);
+
+        // configure identity generation preferences
+        $this->configureIdentityGenerationPreferences(
+            $configuration,
+            $ormConfig[ConfigOptions::IDENTITY_GENERATION_PREFERENCES] ?? [],
+        );
 
         return $configuration;
     }
@@ -278,6 +284,17 @@ final class ConfigurationFactory
         foreach ($filters as $name => $className) {
             $configuration->addFilter($name, $className);
         }
+    }
+
+    private function configureIdentityGenerationPreferences(
+        Configuration $configuration,
+        array $identityGenerationPreferences
+    ): void {
+        if (empty($identityGenerationPreferences)) {
+            return;
+        }
+
+        $configuration->setIdentityGenerationPreferences($identityGenerationPreferences);
     }
 
     /**

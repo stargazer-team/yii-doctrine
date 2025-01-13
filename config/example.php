@@ -12,40 +12,48 @@ use Yiisoft\Yii\Doctrine\Orm\Enum\DriverMappingEnum;
 return [
     'yiisoft/yii-doctrine' => [
         DbalConfigOption::DBAL => [
-            'default' => [
-                // check params https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/configuration.html
-                DbalConfigOption::PARAMS => [
-                    'driver' => 'pdo_pgsql',
-                    'dbname' => 'dbname',
-                    'host' => 'localhost',
-                    'password' => 'secret',
-                    'user' => 'postgres',
-                ],
-                DbalConfigOption::CUSTOM_TYPES => [
-//                    UuidType::NAME => UuidType::class
-                ],
-                DbalConfigOption::AUTO_COMMIT => false,
-//                DbalConfigOption::SCHEMA_ASSETS_FILTER => static function (string|Sequence $table): bool {
-//                    if (is_string($table)) {
-//                        return $table === 'geo_locations';
-//                    }
+            DbalConfigOption::CONNECTIONS => [
+                'default' => [
+                    // check params https://www.doctrine-project.org/projects/doctrine-dbal/en/current/reference/configuration.html
+                    DbalConfigOption::PARAMS => [
+                        'driver' => 'pdo_pgsql',
+                        'dbname' => 'dbname',
+                        'host' => 'localhost',
+                        'password' => 'secret',
+                        'user' => 'postgres',
+                    ],
+//                    DbalConfigOption::AUTO_COMMIT => false,
+//                    DbalConfigOption::DISABLE_TYPE_COMMENTS => false,
+//                    DbalConfigOption::SCHEMA_MANAGER_FACTORY => DefaultSchemaManagerFactory::class,
+//                    DbalConfigOption::SCHEMA_ASSETS_FILTER => static function (string|Sequence $table): bool {
+//                      if (is_string($table)) {
+//                          return $table === 'geo_locations';
+//                      }
 //
 //                    return true;
 //                },
-                DbalConfigOption::MIDDLEWARES => [
-                    // logger middleware
-                    Doctrine\DBAL\Logging\Middleware::class
-                ]
-            ],
-            'mysql' => [
-                DbalConfigOption::PARAMS => [
-                    'driver' => 'pdo_mysql',
-                    'dbname' => 'dbname',
-                    'host' => 'localhost',
-                    'password' => 'secret',
-                    'user' => 'root',
+//                check https://www.doctrine-project.org/projects/doctrine-orm/en/3.3/cookbook/custom-mapping-types.html
+//                DbalConfigOption::MAPPING_TYPES => [
+//                   'db_mytype' => 'mytype',
+//                ],
+                    DbalConfigOption::MIDDLEWARES => [
+                        // logger middleware
+                        Doctrine\DBAL\Logging\Middleware::class
+                    ]
                 ],
-            ]
+                'mysql' => [
+                    DbalConfigOption::PARAMS => [
+                        'driver' => 'pdo_mysql',
+                        'dbname' => 'dbname',
+                        'host' => 'localhost',
+                        'password' => 'secret',
+                        'user' => 'root',
+                    ],
+                ],
+            ],
+//            DbalConfigOption::CUSTOM_TYPES => [
+//                UuidType::NAME => UuidType::class
+//            ],
         ],
         OrmConfigOptions::ORM => [
             OrmConfigOptions::PROXIES => [
@@ -69,6 +77,9 @@ return [
 //                  OrmConfigOptions::DEFAULT_QUERY_HINTS => [
 //                      Query::HINT_CUSTOM_OUTPUT_WALKER => Query\SqlWalker::class,
 //                   ],
+//                    OrmConfigOptions::IDENTITY_GENERATION_PREFERENCES => [
+//                        PostgreSQLPlatform::CLASS => ClassMetadata::GENERATOR_TYPE_SEQUENCE,
+//                    ],
                     OrmConfigOptions::MAPPINGS => [
                         'User' => [
                             OrmConfigOptions::MAPPING_DIR => '@src/User/Entity',
