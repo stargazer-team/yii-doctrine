@@ -40,6 +40,8 @@ final class ConfigOptions
 
     public const FILTERS = 'filters';
 
+    public const IDENTITY_GENERATION_PREFERENCES = 'identity_generation_preferences';
+
     public const MAPPINGS = 'mappings';
 
     public const MAPPING_DIR = 'dir';

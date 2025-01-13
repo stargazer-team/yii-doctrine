@@ -7,6 +7,7 @@ namespace Yiisoft\Yii\Doctrine\Factory;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
 use RuntimeException;
+use Yiisoft\Yii\Doctrine\Dbal\CustomerTypeConfigurator;
 use Yiisoft\Yii\Doctrine\Dbal\Enum\ConfigOptions as DbalConfigOption;
 use Yiisoft\Yii\Doctrine\Dbal\Factory\ConnectionFactory;
 use Yiisoft\Yii\Doctrine\DoctrineManager;
@@ -19,6 +20,7 @@ final class DoctrineManagerFactory
 {
     public function __construct(
         private readonly ConnectionFactory $connectionFactory,
+        private readonly CustomerTypeConfigurator $customerTypeConfigurator,
         private readonly EntityManagerFactory $entityManagerFactory,
     ) {
     }
@@ -28,11 +30,16 @@ final class DoctrineManagerFactory
      */
     public function create(array $doctrineConfig): DoctrineManager
     {
+        // configure customer types
+        $this->customerTypeConfigurator->add(
+            $doctrineConfig[DbalConfigOption::DBAL][DbalConfigOption::CUSTOM_TYPES] ?? [],
+        );
+
         // init connections
         $connections = [];
 
-        if (!empty($doctrineConfig[DbalConfigOption::DBAL])) {
-            foreach ($doctrineConfig[DbalConfigOption::DBAL] as $name => $dbalConfig) {
+        if (!empty($doctrineConfig[DbalConfigOption::DBAL][DbalConfigOption::CONNECTIONS])) {
+            foreach ($doctrineConfig[DbalConfigOption::DBAL][DbalConfigOption::CONNECTIONS] as $name => $dbalConfig) {
                 $connections[$name] = $this->connectionFactory->create($dbalConfig);
             }
         }
@@ -46,7 +53,7 @@ final class DoctrineManagerFactory
 
                 if (null === $connectionName) {
                     throw new RuntimeException(
-                        sprintf('Not found param "connection" on entity manager "%s"', $name)
+                        sprintf('Not found param "connection" on entity manager "%s"', $name),
                     );
                 }
 
@@ -55,7 +62,7 @@ final class DoctrineManagerFactory
 
                 if (null === $connection) {
                     throw new RuntimeException(
-                        sprintf('Not found connection "%s"', $connectionName)
+                        sprintf('Not found connection "%s"', $connectionName),
                     );
                 }
 
@@ -71,7 +78,7 @@ final class DoctrineManagerFactory
             $connections,
             $entityManagers,
             DoctrineManager::DEFAULT_CONNECTION,
-            DoctrineManager::DEFAULT_CONNECTION
+            DoctrineManager::DEFAULT_CONNECTION,
         );
     }
 }

@@ -8,25 +8,29 @@ use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Driver\Middleware;
 use Doctrine\DBAL\DriverManager;
 use Doctrine\DBAL\Exception;
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Schema\SchemaManagerFactory;
 use InvalidArgumentException;
+use Yiisoft\Yii\Doctrine\Dbal\CustomerTypeConfigurator;
 use Yiisoft\Yii\Doctrine\Dbal\Enum\ConfigOptions;
 
 final class ConnectionFactory
 {
     public function __construct(
         private readonly ConfigurationFactory $configurationFactory,
+        private readonly CustomerTypeConfigurator $customerTypeConfigurator,
     ) {
     }
 
     /**
      * @psalm-param array{
      *     auto_commit: bool|empty,
-     *     custom_types: array<string, class-string<Type>>|empty,
      *     events: array|empty,
      *     middlewares: array<array-key, class-string<Middleware>>|empty,
      *     params: array<string, mixed>,
-     *     schema_assets_filter: callable|empty
+     *     schema_assets_filter: callable|empty,
+     *     mapping_types: array<string, string>,
+     *     disable_type_comments: bool,
+     *     schema_manager_factory: class-string<SchemaManagerFactory>
      * } $dbalConfig
      *
      * @throws Exception
@@ -41,24 +45,11 @@ final class ConnectionFactory
 
         $connection = DriverManager::getConnection($dbalConfig[ConfigOptions::PARAMS], $configuration);
 
-        $this->configureCustomTypes($connection, $dbalConfig[ConfigOptions::CUSTOM_TYPES] ?? []);
+        $this->customerTypeConfigurator->registerDoctrineTypeMapping(
+            $connection,
+            $dbalConfig[ConfigOptions::PARAMS][ConfigOptions::MAPPING_TYPES] ?? [],
+        );
 
         return $connection;
-    }
-
-    /**
-     * @psalm-param array<string, class-string<Type>>|empty $customTypes
-     *
-     * @throws Exception
-     */
-    private function configureCustomTypes(Connection $connection, array $customTypes): void
-    {
-        foreach ($customTypes as $name => $className) {
-            if (!Type::hasType($name)) {
-                Type::addType($name, $className);
-            }
-
-            $connection->getDatabasePlatform()->registerDoctrineTypeMapping($name, $name);
-        }
     }
 }

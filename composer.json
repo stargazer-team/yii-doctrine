@@ -16,7 +16,7 @@
     "require": {
         "php": ">=8.1.0",
         "doctrine/migrations": "^3.8.2",
-        "doctrine/orm": "^3.3.0",
+        "doctrine/orm": "^3.3.1",
         "psr/cache": "^2.0|^3.0",
         "psr/log": "^2|^3",
         "symfony/cache": "^6.4.16",

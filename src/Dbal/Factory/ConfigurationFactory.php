@@ -6,9 +6,13 @@ namespace Yiisoft\Yii\Doctrine\Dbal\Factory;
 
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\Driver\Middleware;
-use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Schema\SchemaManagerFactory;
+use RuntimeException;
 use Yiisoft\Injector\Injector;
 use Yiisoft\Yii\Doctrine\Dbal\Enum\ConfigOptions;
+
+use function array_map;
+use function sprintf;
 
 final class ConfigurationFactory
 {
@@ -20,11 +24,13 @@ final class ConfigurationFactory
     /**
      * @psalm-param array{
      *     auto_commit: bool,
-     *     custom_types: array<string, class-string<Type>>,
      *     events: array<array-key, mixed>,
      *     middlewares: array<array-key, class-string<\Doctrine\DBAL\Driver\Middleware>>|empty,
      *     params: array<string, mixed>,
-     *     schema_assets_filter: callable
+     *     schema_assets_filter: callable,
+     *     mapping_types: array<string, string>,
+     *     disable_type_comments: bool,
+     *     schema_manager_factory: class-string<SchemaManagerFactory>
      * } $dbalConfig
      */
     public function create(array $dbalConfig): Configuration
@@ -44,6 +50,10 @@ final class ConfigurationFactory
 
         $this->configureSchemaAssetsFilter($configuration, $dbalConfig[ConfigOptions::SCHEMA_ASSETS_FILTER] ?? null);
 
+        $this->configureDisableTypeComments($configuration, $dbalConfig[ConfigOptions::DISABLE_TYPE_COMMENTS] ?? null);
+
+        $this->configureSchemaManagerFactory($configuration, $dbalConfig[ConfigOptions::SCHEMA_MANAGER_FACTORY] ?? []);
+
         return $configuration;
     }
 
@@ -57,6 +67,19 @@ final class ConfigurationFactory
         $configuration->setAutoCommit($autoCommit);
     }
 
+    private function configureDisableTypeComments(Configuration $configuration, ?bool $disableTypeComments): void
+    {
+        if (null === $disableTypeComments) {
+            return;
+        }
+
+        if (!$disableTypeComments) {
+            return;
+        }
+
+        $configuration->setDisableTypeComments($disableTypeComments);
+    }
+
     private function configureSchemaAssetsFilter(Configuration $configuration, ?callable $schemaAssetsFilter): void
     {
         if (null === $schemaAssetsFilter) {
@@ -64,5 +87,24 @@ final class ConfigurationFactory
         }
 
         $configuration->setSchemaAssetsFilter($schemaAssetsFilter);
+    }
+
+    private function configureSchemaManagerFactory(
+        Configuration $configuration,
+        ?string $configureSchemaManagerFactoryClass
+    ): void {
+        if (null === $configureSchemaManagerFactoryClass) {
+            return;
+        }
+
+        $schemaManagerFactory = $this->injector->make($configureSchemaManagerFactoryClass);
+
+        if (!$schemaManagerFactory instanceof SchemaManagerFactory) {
+            throw new RuntimeException(
+                sprintf('Class %s not instance %s', $configureSchemaManagerFactoryClass, SchemaManagerFactory::class)
+            );
+        }
+
+        $configuration->setSchemaManagerFactory($schemaManagerFactory);
     }
 }

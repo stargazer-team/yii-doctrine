@@ -6,6 +6,7 @@ namespace Yiisoft\Yii\Doctrine\Dbal\Factory;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Exception;
+use Doctrine\DBAL\Schema\SchemaManagerFactory;
 use RuntimeException;
 use Yiisoft\Yii\Doctrine\DoctrineManager;
 
@@ -22,11 +23,13 @@ final class DynamicConnectionFactory
     /**
      * @psalm-param array{
      *     auto_commit: bool,
-     *     custom_types: array<string, class-string<\Doctrine\DBAL\Types\Type>>,
      *     events: array<array-key, mixed>,
      *     middlewares: array<array-key, class-string<\Doctrine\DBAL\Driver\Middleware>>|empty,
      *     params: array<string, mixed>,
-     *     schema_assets_filter: callable
+     *     schema_assets_filter: callable,
+     *     mapping_types: array<string, string>,
+     *     disable_type_comments: bool,
+     *     schema_manager_factory: class-string<SchemaManagerFactory>
      * } $dbalConfig
      * @throws Exception
      */
