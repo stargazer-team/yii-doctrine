@@ -7,7 +7,7 @@ namespace Yiisoft\Yii\Doctrine\Migrations\Factory;
 use Doctrine\Migrations\Configuration\Migration\ConfigurationArray;
 use Yiisoft\Aliases\Aliases;
 use Yiisoft\Yii\Doctrine\Migrations\Enum\ConfigOptions;
-use Yiisoft\Yii\Doctrine\Migrations\MigrationConfigurationManager;
+use Yiisoft\Yii\Doctrine\Migrations\MigrationConfigurationRegistry;
 
 final class MigrationConfigurationFactory
 {
@@ -29,7 +29,7 @@ final class MigrationConfigurationFactory
      *     check_database_platform: bool|empty
      * }> $migrationConfig
      */
-    public function create(array $migrationConfig): MigrationConfigurationManager
+    public function create(array $migrationConfig): MigrationConfigurationRegistry
     {
         $configurations = [];
 
@@ -51,6 +51,6 @@ final class MigrationConfigurationFactory
             }
         }
 
-        return new MigrationConfigurationManager($configurations);
+        return new MigrationConfigurationRegistry($configurations);
     }
 }

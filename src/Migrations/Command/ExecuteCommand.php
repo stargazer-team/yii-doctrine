@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Yii\Doctrine\Migrations\Command;
 
+use Doctrine\DBAL\Exception;
 use Doctrine\Migrations\Version\Direction;
 use Doctrine\Migrations\Version\Version;
 use Symfony\Component\Console\Input\InputArgument;
@@ -38,38 +39,38 @@ final class ExecuteCommand extends BaseMigrationCommand
                 'versions',
                 InputArgument::REQUIRED | InputArgument::IS_ARRAY,
                 'The versions to execute.',
-                null
+                null,
             )
             ->addOption(
                 'write-sql',
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'The path to output the migration SQL file. Defaults to current working directory.',
-                false
+                false,
             )
             ->addOption(
                 'dry-run',
                 null,
                 InputOption::VALUE_NONE,
-                'Execute the migration as a dry run.'
+                'Execute the migration as a dry run.',
             )
             ->addOption(
                 'up',
                 null,
                 InputOption::VALUE_NONE,
-                'Execute the migration up.'
+                'Execute the migration up.',
             )
             ->addOption(
                 'down',
                 null,
                 InputOption::VALUE_NONE,
-                'Execute the migration down.'
+                'Execute the migration down.',
             )
             ->addOption(
                 'query-time',
                 null,
                 InputOption::VALUE_NONE,
-                'Time all the queries individually.'
+                'Time all the queries individually.',
             )
             ->setHelp(
                 <<<EOT
@@ -109,6 +110,9 @@ EOT
         parent::configure();
     }
 
+    /**
+     * @throws Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $migratorConfigurationFactory = $this
@@ -124,7 +128,7 @@ EOT
 
         $question = sprintf(
             'WARNING! You are about to execute a migration in database "%s" that could result in schema changes and data loss. Are you sure you wish to continue?',
-            $databaseName === '' ? '<unnamed>' : $databaseName
+            $databaseName === '' ? '<unnamed>' : $databaseName,
         );
 
         if (!$migratorConfiguration->isDryRun() && !$this->canExecute($question, $input)) {
@@ -161,9 +165,9 @@ EOT
         $plan = $planCalculator->getPlanForVersions(
             array_map(
                 static fn(string $version): Version => new Version($version),
-                $versions
+                $versions,
             ),
-            $direction
+            $direction,
         );
 
         $this
@@ -174,7 +178,7 @@ EOT
                 [
                     'direction' => $plan->getDirection(),
                     'versions' => implode(', ', $versions),
-                ]
+                ],
             );
 
         $migrator = $this
@@ -190,6 +194,14 @@ EOT
 
             $writer->write($path, $direction, $sql);
         }
+
+        $this->io->success(
+            sprintf(
+                'Successfully migrated version(s): %s: [%s]',
+                implode(', ', $versions),
+                strtoupper($plan->getDirection()),
+            ),
+        );
 
         $this->io->newLine();
 

@@ -164,7 +164,7 @@ EOT
                     sprintf(
                         "<info>%s</info> deleted from the version table.\n",
                         (string)$version,
-                    )
+                    ),
                 );
 
                 return;
@@ -201,7 +201,7 @@ EOT
                 sprintf(
                     "<info>%s</info> added to the version table.\n",
                     (string)$version,
-                )
+                ),
             );
         } else {
             $migrationResult = new ExecutionResult($version, Direction::DOWN);
@@ -211,7 +211,7 @@ EOT
                 sprintf(
                     "<info>%s</info> deleted from the version table.\n",
                     (string)$version,
-                )
+                ),
             );
         }
     }

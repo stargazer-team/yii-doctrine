@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Yii\Doctrine\Migrations\Command;
 
+use Exception;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -26,7 +27,7 @@ final class GenerateCommand extends BaseMigrationCommand
                 'namespace',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'The namespace to use for the migration (must be in the list of configured namespaces)'
+                'The namespace to use for the migration (must be in the list of configured namespaces)',
             )
             ->setHelp(
                 <<<EOT
@@ -40,6 +41,9 @@ EOT
         parent::configure();
     }
 
+    /**
+     * @throws Exception
+     */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
         $migrationGenerator = $this
@@ -69,7 +73,7 @@ EOT
                     $fqcn
                 ),
                 '',
-            ]
+            ],
         );
 
         return ExitCode::OK;

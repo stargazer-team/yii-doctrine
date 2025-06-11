@@ -10,9 +10,8 @@ use Yiisoft\Yii\Doctrine\DoctrineManager;
 
 final class DbalConnectionProvider implements ConnectionProvider
 {
-    public function __construct(
-        private readonly DoctrineManager $doctrineManager,
-    ) {
+    public function __construct(private readonly DoctrineManager $doctrineManager)
+    {
     }
 
     public function getConnection(string $name): Connection

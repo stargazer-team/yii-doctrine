@@ -6,7 +6,7 @@ use Doctrine\DBAL\Tools\Console\ConnectionProvider;
 use Doctrine\ORM\Tools\Console\EntityManagerProvider;
 use Yiisoft\Yii\Doctrine\Dbal\Provider\DbalConnectionProvider;
 use Yiisoft\Yii\Doctrine\Migrations\Factory\MigrationConfigurationFactory;
-use Yiisoft\Yii\Doctrine\Migrations\MigrationConfigurationManager;
+use Yiisoft\Yii\Doctrine\Migrations\MigrationConfigurationRegistry;
 use Yiisoft\Yii\Doctrine\Orm\Provider\CustomerEntityManagerProvider;
 
 /** @var array $params */
@@ -16,9 +16,9 @@ return [
 
     EntityManagerProvider::class => CustomerEntityManagerProvider::class,
 
-    MigrationConfigurationManager::class => static fn(
+    MigrationConfigurationRegistry::class => static fn(
         MigrationConfigurationFactory $migrationConfigurationFactory
-    ): MigrationConfigurationManager => $migrationConfigurationFactory->create(
+    ): MigrationConfigurationRegistry => $migrationConfigurationFactory->create(
         $params['yiisoft/yii-doctrine-migrations'] ?? []
     ),
 ];

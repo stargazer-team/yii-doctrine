@@ -20,9 +20,8 @@ use function sprintf;
 
 final class CreateDatabaseCommand extends Command
 {
-    public function __construct(
-        private readonly DoctrineManager $doctrineManager,
-    ) {
+    public function __construct(private readonly DoctrineManager $doctrineManager)
+    {
         parent::__construct();
     }
 

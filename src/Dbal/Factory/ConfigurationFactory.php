@@ -16,21 +16,19 @@ use function sprintf;
 
 final class ConfigurationFactory
 {
-    public function __construct(
-        private readonly Injector $injector,
-    ) {
+    public function __construct(private readonly Injector $injector)
+    {
     }
 
     /**
      * @psalm-param array{
-     *     auto_commit: bool,
-     *     events: array<array-key, mixed>,
-     *     middlewares: array<array-key, class-string<\Doctrine\DBAL\Driver\Middleware>>|empty,
+     *     auto_commit?: bool,
+     *     middlewares?: array<array-key, class-string<\Doctrine\DBAL\Driver\Middleware>>,
      *     params: array<string, mixed>,
-     *     schema_assets_filter: callable,
-     *     mapping_types: array<string, string>,
-     *     disable_type_comments: bool,
-     *     schema_manager_factory: class-string<SchemaManagerFactory>
+     *     schema_assets_filter?: callable,
+     *     mapping_types?: array<string, string>,
+     *     disable_type_comments?: bool,
+     *     schema_manager_factory?: class-string<SchemaManagerFactory>
      * } $dbalConfig
      */
     public function create(array $dbalConfig): Configuration
@@ -38,10 +36,8 @@ final class ConfigurationFactory
         $configuration = new Configuration();
 
         $middlewares = array_map(
-            function (string $classMiddleware): Middleware {
-                return $this->injector->make($classMiddleware);
-            },
-            $dbalConfig[ConfigOptions::MIDDLEWARES] ?? []
+            fn(string $classMiddleware): Middleware => $this->injector->make($classMiddleware),
+            $dbalConfig[ConfigOptions::MIDDLEWARES] ?? [],
         );
 
         $configuration->setMiddlewares($middlewares);
@@ -92,9 +88,12 @@ final class ConfigurationFactory
         $configuration->setSchemaAssetsFilter($schemaAssetsFilter);
     }
 
+    /**
+     * @param class-string<SchemaManagerFactory>|null $configureSchemaManagerFactoryClass
+     */
     private function configureSchemaManagerFactory(
         Configuration $configuration,
-        ?string $configureSchemaManagerFactoryClass
+        ?string $configureSchemaManagerFactoryClass,
     ): void {
         if (null === $configureSchemaManagerFactoryClass) {
             return;
