@@ -47,11 +47,10 @@ EOT
                 ->getDependencyFactory()
                 ->getMigrationPlanCalculator()
                 ->getMigrations(), // available migrations
-
             $this
                 ->getDependencyFactory()
                 ->getMetadataStorage()
-                ->getExecutedMigrations() // executed migrations
+                ->getExecutedMigrations(), // executed migrations
         );
 
         $this->getDependencyFactory()
@@ -66,16 +65,16 @@ EOT
      */
     private function getSortedVersions(
         AvailableMigrationsList $availableMigrations,
-        ExecutedMigrationsList $executedMigrations
+        ExecutedMigrationsList $executedMigrations,
     ): array {
         $availableVersions = array_map(
             static fn(AvailableMigration $availableMigration): Version => $availableMigration->getVersion(),
-            $availableMigrations->getItems()
+            $availableMigrations->getItems(),
         );
 
         $executedVersions = array_map(
             static fn(ExecutedMigration $executedMigration): Version => $executedMigration->getVersion(),
-            $executedMigrations->getItems()
+            $executedMigrations->getItems(),
         );
 
         $versions = array_unique(array_merge($availableVersions, $executedVersions));

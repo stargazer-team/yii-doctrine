@@ -24,9 +24,8 @@ final class DropDatabaseCommand extends Command
 {
     public const RETURN_CODE_NO_FORCE = 2;
 
-    public function __construct(
-        private readonly DoctrineManager $doctrineManager,
-    ) {
+    public function __construct(private readonly DoctrineManager $doctrineManager)
+    {
         parent::__construct();
     }
 
@@ -103,8 +102,8 @@ EOT
                 sprintf(
                     '<info>Would drop the database <comment>%s</comment> for connection named <comment>%s</comment>.</info>',
                     $name,
-                    $connectionName
-                )
+                    $connectionName,
+                ),
             );
             $output->writeln('Please run the operation with --force to execute');
             $output->writeln('<error>All data will be lost!</error>');
@@ -141,16 +140,16 @@ EOT
                     sprintf(
                         '<info>Dropped database <comment>%s</comment> for connection named <comment>%s</comment></info>',
                         $name,
-                        $connectionName
-                    )
+                        $connectionName,
+                    ),
                 );
             } else {
                 $output->writeln(
                     sprintf(
                         '<info>Database <comment>%s</comment> for connection named <comment>%s</comment> doesn\'t exist. Skipped.</info>',
                         $name,
-                        $connectionName
-                    )
+                        $connectionName,
+                    ),
                 );
             }
 
@@ -160,8 +159,8 @@ EOT
                 sprintf(
                     '<error>Could not drop database <comment>%s</comment> for connection named <comment>%s</comment></error>',
                     $name,
-                    $connectionName
-                )
+                    $connectionName,
+                ),
             );
             $output->writeln(sprintf('<error>%s</error>', $e->getMessage()));
 

@@ -22,14 +22,13 @@ final class DynamicConnectionFactory
 
     /**
      * @psalm-param array{
-     *     auto_commit: bool,
-     *     events: array<array-key, mixed>,
-     *     middlewares: array<array-key, class-string<\Doctrine\DBAL\Driver\Middleware>>|empty,
+     *     auto_commit?: bool,
+     *     middlewares?: array<array-key, class-string<\Doctrine\DBAL\Driver\Middleware>>,
      *     params: array<string, mixed>,
-     *     schema_assets_filter: callable,
-     *     mapping_types: array<string, string>,
-     *     disable_type_comments: bool,
-     *     schema_manager_factory: class-string<SchemaManagerFactory>
+     *     schema_assets_filter?: callable,
+     *     mapping_types?: array<string, string>,
+     *     disable_type_comments?: bool,
+     *     schema_manager_factory?: class-string<SchemaManagerFactory>
      * } $dbalConfig
      * @throws Exception
      */

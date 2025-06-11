@@ -21,7 +21,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Yiisoft\Yii\Doctrine\DoctrineManager;
-use Yiisoft\Yii\Doctrine\Migrations\MigrationConfigurationManager;
+use Yiisoft\Yii\Doctrine\Migrations\MigrationConfigurationRegistry;
 
 use function array_keys;
 use function assert;
@@ -38,7 +38,7 @@ class BaseMigrationCommand extends Command
 
     public function __construct(
         private readonly DoctrineManager $doctrineManager,
-        private readonly MigrationConfigurationManager $migrationConfigurationManager,
+        private readonly MigrationConfigurationRegistry $migrationConfigurationRegistry,
         private readonly LoggerInterface $logger = new NullLogger(),
     ) {
         parent::__construct();
@@ -55,7 +55,7 @@ class BaseMigrationCommand extends Command
             'configuration',
             null,
             InputOption::VALUE_OPTIONAL,
-            'The name to a migrations configuration on config.'
+            'The name to a migrations configuration on config.',
         );
     }
 
@@ -68,16 +68,21 @@ class BaseMigrationCommand extends Command
         return $this->dependencyFactory;
     }
 
+    /**
+     * @throws Exception
+     */
     final protected function getNamespace(InputInterface $input, OutputInterface $output): string
     {
         $configuration = $this->getDependencyFactory()->getConfiguration();
 
         $namespace = $input->getOption('namespace');
+
         if ($namespace === '') {
             $namespace = null;
         }
 
         $dirs = $configuration->getMigrationDirectories();
+
         if ($namespace === null && count($dirs) === 1) {
             $namespace = key($dirs);
         } elseif ($namespace === null && count($dirs) > 1) {
@@ -106,9 +111,11 @@ class BaseMigrationCommand extends Command
         $this->io = new SymfonyStyle($input, $output);
 
         /** @var string $configurationName */
-        $configurationName = $input->getOption('configuration') ?? MigrationConfigurationManager::DEFAULT_CONFIGURATION;
+        $configurationName = $input->getOption(
+            'configuration'
+        ) ?? MigrationConfigurationRegistry::DEFAULT_CONFIGURATION;
 
-        $configuration = $this->migrationConfigurationManager->getConfiguration($configurationName);
+        $configuration = $this->migrationConfigurationRegistry->getConfiguration($configurationName);
 
         $configurationLoader = new ExistingConfiguration($configuration);
 
