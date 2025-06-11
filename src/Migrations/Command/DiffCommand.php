@@ -44,13 +44,13 @@ EOT
                 'namespace',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'The namespace to use for the migration (must be in the list of configured namespaces)'
+                'The namespace to use for the migration (must be in the list of configured namespaces)',
             )
             ->addOption(
                 'filter-expression',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Tables which are filtered by Regular Expression.'
+                'Tables which are filtered by Regular Expression.',
             )
             ->addOption(
                 'line-length',
@@ -70,13 +70,13 @@ EOT
                 'allow-empty-diff',
                 null,
                 InputOption::VALUE_NONE,
-                'Do not throw an exception when no changes are detected.'
+                'Do not throw an exception when no changes are detected.',
             )
             ->addOption(
                 'from-empty-schema',
                 null,
                 InputOption::VALUE_NONE,
-                'Generate a full migration as if the current database was empty.'
+                'Generate a full migration as if the current database was empty.',
             );
 
         parent::configure();
@@ -109,11 +109,7 @@ EOT
         $executedUnavailableMigrations = $statusCalculator->getExecutedUnavailableMigrations();
         $newMigrations = $statusCalculator->getNewMigrations();
 
-        if (!$this->checkNewMigrationsOrExecutedUnavailable(
-            $newMigrations,
-            $executedUnavailableMigrations,
-            $input,
-        )) {
+        if (!$this->checkNewMigrationsOrExecutedUnavailable($newMigrations, $executedUnavailableMigrations, $input)) {
             $this->io->error('Migration cancelled!');
 
             return 3;

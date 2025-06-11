@@ -9,7 +9,7 @@ use RuntimeException;
 
 use function sprintf;
 
-final class MigrationConfigurationManager
+final class MigrationConfigurationRegistry
 {
     public const DEFAULT_CONFIGURATION = 'default';
 

@@ -14,9 +14,8 @@ use function sprintf;
 
 final class EventManagerFactory
 {
-    public function __construct(
-        private readonly Injector $injector,
-    ) {
+    public function __construct(private readonly Injector $injector)
+    {
     }
 
     public function create(array $eventConfig): EventManager

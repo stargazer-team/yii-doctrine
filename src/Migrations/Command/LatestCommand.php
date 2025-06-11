@@ -52,8 +52,8 @@ final class LatestCommand extends BaseMigrationCommand
             sprintf(
                 "<info>%s</info>%s\n",
                 (string)$version,
-                $description !== '' ? ' - ' . $description : ''
-            )
+                $description !== '' ? ' - ' . $description : '',
+            ),
         );
 
         return ExitCode::OK;

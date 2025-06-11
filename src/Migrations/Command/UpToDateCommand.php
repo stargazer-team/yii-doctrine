@@ -37,13 +37,13 @@ final class UpToDateCommand extends BaseMigrationCommand
                 'fail-on-unregistered',
                 'u',
                 InputOption::VALUE_NONE,
-                'Whether to fail when there are unregistered extra migrations found'
+                'Whether to fail when there are unregistered extra migrations found',
             )
             ->addOption(
                 'list-migrations',
                 'l',
                 InputOption::VALUE_NONE,
-                'Show a list of missing or not migrated versions.'
+                'Show a list of missing or not migrated versions.',
             )
             ->setHelp(
                 <<<EOT
@@ -80,8 +80,8 @@ EOT
                 sprintf(
                     'Out-of-date! %u migration%s available to execute.',
                     $newMigrationsCount,
-                    $newMigrationsCount > 1 ? 's are' : ' is'
-                )
+                    $newMigrationsCount > 1 ? 's are' : ' is',
+                ),
             );
             $exitCode = ExitCode::UNSPECIFIED_ERROR;
         }
@@ -92,8 +92,8 @@ EOT
                     'You have %1$u previously executed migration%3$s in the database that %2$s registered migration%3$s.',
                     $executedUnavailableMigrationsCount,
                     $executedUnavailableMigrationsCount > 1 ? 'are not' : 'is not a',
-                    $executedUnavailableMigrationsCount > 1 ? 's' : ''
-                )
+                    $executedUnavailableMigrationsCount > 1 ? 's' : '',
+                ),
             );
 
             if ($input->getOption('fail-on-unregistered')) {
@@ -120,16 +120,16 @@ EOT
      */
     private function getSortedVersions(
         AvailableMigrationsList $newMigrations,
-        ExecutedMigrationsList $executedUnavailableMigrations
+        ExecutedMigrationsList $executedUnavailableMigrations,
     ): array {
         $executedUnavailableVersion = array_map(
             static fn(ExecutedMigration $executedMigration): Version => $executedMigration->getVersion(),
-            $executedUnavailableMigrations->getItems()
+            $executedUnavailableMigrations->getItems(),
         );
 
         $newVersions = array_map(
             static fn(AvailableMigration $availableMigration): Version => $availableMigration->getVersion(),
-            $newMigrations->getItems()
+            $newMigrations->getItems(),
         );
 
         $versions = array_unique(array_merge($executedUnavailableVersion, $newVersions));

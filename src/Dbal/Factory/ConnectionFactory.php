@@ -23,14 +23,13 @@ final class ConnectionFactory
 
     /**
      * @psalm-param array{
-     *     auto_commit: bool|empty,
-     *     events: array|empty,
-     *     middlewares: array<array-key, class-string<Middleware>>|empty,
+     *     auto_commit?: bool,
+     *     middlewares?: array<array-key, class-string<Middleware>>,
      *     params: array<string, mixed>,
-     *     schema_assets_filter: callable|empty,
-     *     mapping_types: array<string, string>,
-     *     disable_type_comments: bool,
-     *     schema_manager_factory: class-string<SchemaManagerFactory>
+     *     schema_assets_filter?: callable,
+     *     mapping_types?: array<string, string>,
+     *     disable_type_comments?: bool,
+     *     schema_manager_factory?: class-string<SchemaManagerFactory>
      * } $dbalConfig
      *
      * @throws Exception
@@ -47,7 +46,7 @@ final class ConnectionFactory
 
         $this->customerTypeConfigurator->registerDoctrineTypeMapping(
             $connection,
-            $dbalConfig[ConfigOptions::PARAMS][ConfigOptions::MAPPING_TYPES] ?? [],
+            $dbalConfig[ConfigOptions::MAPPING_TYPES] ?? [],
         );
 
         return $connection;

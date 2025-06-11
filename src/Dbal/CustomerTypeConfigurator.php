@@ -6,6 +6,7 @@ namespace Yiisoft\Yii\Doctrine\Dbal;
 
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\ConnectionException;
+use Doctrine\DBAL\Exception;
 use Doctrine\DBAL\Exception\DriverException;
 use Doctrine\DBAL\Platforms\AbstractPlatform;
 use Doctrine\DBAL\Types\Type;
@@ -14,6 +15,9 @@ use const PHP_EOL;
 
 final class CustomerTypeConfigurator
 {
+    /**
+     * @throws Exception
+     */
     public function add(array $customTypes): void
     {
         foreach ($customTypes as $name => $className) {
@@ -23,6 +27,10 @@ final class CustomerTypeConfigurator
         }
     }
 
+    /**
+     * @throws ConnectionException
+     * @throws Exception
+     */
     public function registerDoctrineTypeMapping(Connection $connection, array $mappingTypes): void
     {
         $platform = $this->getDatabasePlatform($connection);
@@ -32,6 +40,10 @@ final class CustomerTypeConfigurator
         }
     }
 
+    /**
+     * @throws ConnectionException
+     * @throws Exception
+     */
     private function getDatabasePlatform(Connection $connection): AbstractPlatform
     {
         try {

@@ -13,4 +13,8 @@ final class ConfigOptions
     public const PATH = 'path';
     public const PORT = 'port';
     public const SERVER = 'server';
+
+    private function __construct()
+    {
+    }
 }

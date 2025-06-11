@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Yiisoft\Yii\Doctrine\Migrations\Command;
 
 use Doctrine\Migrations\Tools\Console\Exception\SchemaDumpRequiresNoMigrations;
+use Exception;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -40,20 +41,20 @@ EOT
                 'namespace',
                 null,
                 InputOption::VALUE_REQUIRED,
-                'Namespace to use for the generated migrations (defaults to the first namespace definition).'
+                'Namespace to use for the generated migrations (defaults to the first namespace definition).',
             )
             ->addOption(
                 'filter-tables',
                 null,
                 InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY,
-                'Filter the tables to dump via Regex.'
+                'Filter the tables to dump via Regex.',
             )
             ->addOption(
                 'line-length',
                 null,
                 InputOption::VALUE_OPTIONAL,
                 'Max line length of unformatted lines.',
-                '120'
+                '120',
             );
 
         parent::configure();
@@ -61,11 +62,10 @@ EOT
 
     /**
      * @throws SchemaDumpRequiresNoMigrations
+     * @throws Exception
      */
-    protected function execute(
-        InputInterface $input,
-        OutputInterface $output
-    ): int {
+    protected function execute(InputInterface $input, OutputInterface $output): int
+    {
         $lineLength = (int)$input->getOption('line-length');
 
         $schemaDumper = $this
@@ -102,7 +102,7 @@ EOT
                 '',
                 'To use this as a rollup migration you can use the <info>migrations:rollup</info> command.',
                 '',
-            ]
+            ],
         );
 
         return ExitCode::OK;

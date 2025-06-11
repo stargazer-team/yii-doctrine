@@ -10,9 +10,8 @@ use Yiisoft\Yii\Doctrine\DoctrineManager;
 
 final class CustomerEntityManagerProvider implements EntityManagerProvider
 {
-    public function __construct(
-        private readonly DoctrineManager $doctrineManager,
-    ) {
+    public function __construct(private readonly DoctrineManager $doctrineManager)
+    {
     }
 
     public function getDefaultManager(): EntityManagerInterface

@@ -1,5 +1,11 @@
 # Yii3 Doctrine Change Log
 
+## 2.1.1
+
+- Update dependency
+- Update command migration
+- Fix code style
+
 ## 2.1.0
 
 - Dbal:
