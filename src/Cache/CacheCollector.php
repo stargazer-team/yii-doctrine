@@ -14,12 +14,24 @@ final class CacheCollector
     public const DOCTRINE_QUERY_CACHE = 'doctrine.query.cache';
     public const DOCTRINE_RESULT_CACHE = 'doctrine.result.cache';
 
+    private CacheItemPoolInterface $hydrationCache;
+
+    private CacheItemPoolInterface $metadataCache;
+
+    private CacheItemPoolInterface $queryCache;
+
+    private CacheItemPoolInterface $resultCache;
+
     public function __construct(
-        private readonly CacheItemPoolInterface $hydrationCache = new NullAdapter(),
-        private readonly CacheItemPoolInterface $metadataCache = new NullAdapter(),
-        private readonly CacheItemPoolInterface $queryCache = new NullAdapter(),
-        private readonly CacheItemPoolInterface $resultCache = new NullAdapter(),
+        ?CacheItemPoolInterface $hydrationCache,
+        ?CacheItemPoolInterface $metadataCache,
+        ?CacheItemPoolInterface $queryCache,
+        ?CacheItemPoolInterface $resultCache,
     ) {
+        $this->hydrationCache = $hydrationCache ?? new NullAdapter();
+        $this->metadataCache = $metadataCache ?? new NullAdapter();
+        $this->queryCache = $queryCache ?? new NullAdapter();
+        $this->resultCache = $resultCache ?? new NullAdapter();
     }
 
     public function getHydrationCache(): CacheItemPoolInterface
