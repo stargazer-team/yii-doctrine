@@ -1,5 +1,9 @@
 # Yii3 Doctrine Change Log
 
+## 2.1.2
+
+- Fix version composer require checker
+
 ## 2.1.1
 
 - Update dependency

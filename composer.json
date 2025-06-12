@@ -27,7 +27,7 @@
         "yiisoft/yii-console": "^2.3.0"
     },
     "require-dev": {
-        "maglnet/composer-require-checker": "4.7.1",
+        "maglnet/composer-require-checker": "^4.7.1",
         "rector/rector": "^2.0.11",
         "vimeo/psalm": "^4.30 || ^5.26.1 || ^6.10"
     },
