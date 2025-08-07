@@ -7,7 +7,7 @@ namespace Yiisoft\Yii\Doctrine\Migrations\Command;
 use Doctrine\Migrations\Generator\Exception\NoChangesDetected;
 use Doctrine\Migrations\Metadata\AvailableMigrationsList;
 use Doctrine\Migrations\Metadata\ExecutedMigrationsList;
-use Doctrine\Migrations\Tools\Console\Exception\InvalidOptionUsage;
+use Exception;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -53,6 +53,12 @@ EOT
                 'Tables which are filtered by Regular Expression.',
             )
             ->addOption(
+                'nowdoc',
+                null,
+                InputOption::VALUE_NEGATABLE,
+                'Output the generated SQL as a nowdoc string (always active for formatted queries).',
+            )
+            ->addOption(
                 'line-length',
                 null,
                 InputOption::VALUE_REQUIRED,
@@ -83,7 +89,7 @@ EOT
     }
 
     /**
-     * @throws InvalidOptionUsage
+     * @throws Exception
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
@@ -93,6 +99,7 @@ EOT
             $filterExpression = null;
         }
 
+        $nowdocOutput = filter_var($input->getOption('nowdoc'), FILTER_VALIDATE_BOOLEAN);
         $lineLength = (int)$input->getOption('line-length');
         /** @var bool $allowEmptyDiff */
         $allowEmptyDiff = $input->getOption('allow-empty-diff');
@@ -129,6 +136,7 @@ EOT
                 $fqcn,
                 $filterExpression,
                 false,
+                $nowdocOutput,
                 $lineLength,
                 $checkDbPlatform,
                 $fromEmptySchema,
@@ -149,15 +157,15 @@ EOT
                 '',
                 sprintf(
                     'To run just this migration for testing purposes, you can use <info>doctrine:migrations:execute --up \'%s\'</info>',
-                    addslashes($fqcn)
+                    addslashes($fqcn),
                 ),
                 '',
                 sprintf(
                     'To revert the migration you can use <info>doctrine:migrations:execute --down \'%s\'</info>',
-                    addslashes($fqcn)
+                    addslashes($fqcn),
                 ),
                 '',
-            ]
+            ],
         );
 
         return ExitCode::OK;
@@ -176,8 +184,8 @@ EOT
             $this->io->warning(
                 sprintf(
                     'You have %d available migrations to execute.',
-                    count($newMigrations)
-                )
+                    count($newMigrations),
+                ),
             );
         }
 
@@ -185,8 +193,8 @@ EOT
             $this->io->warning(
                 sprintf(
                     'You have %d previously executed migrations in the database that are not registered migrations.',
-                    count($executedUnavailableMigrations)
-                )
+                    count($executedUnavailableMigrations),
+                ),
             );
         }
 

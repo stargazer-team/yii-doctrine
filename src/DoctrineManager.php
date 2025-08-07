@@ -12,9 +12,11 @@ use Doctrine\Persistence\ObjectManager;
 use Doctrine\Persistence\ObjectRepository;
 use Doctrine\Persistence\Proxy;
 use ReflectionClass;
+use ReflectionException;
 use RuntimeException;
 
 use function array_keys;
+use function assert;
 use function sprintf;
 
 final class DoctrineManager implements ManagerRegistry
@@ -33,7 +35,7 @@ final class DoctrineManager implements ManagerRegistry
         private array $connections,
         private array $managers,
         private readonly string $defaultConnection,
-        private readonly string $defaultManager
+        private readonly string $defaultManager,
     ) {
     }
 
@@ -103,7 +105,7 @@ final class DoctrineManager implements ManagerRegistry
         $entityManager->flush();
     }
 
-    public function getConnection($name = null): Connection
+    public function getConnection(?string $name = null): Connection
     {
         if (null === $name) {
             $name = $this->getDefaultConnectionName();
@@ -141,10 +143,7 @@ final class DoctrineManager implements ManagerRegistry
         return $this->defaultManager;
     }
 
-    /**
-     * @param string|null $name
-     */
-    public function getManager(string $name = null): EntityManagerInterface
+    public function getManager(?string $name = null): EntityManagerInterface
     {
         if (null === $name) {
             $name = $this->getDefaultManagerName();
@@ -159,7 +158,10 @@ final class DoctrineManager implements ManagerRegistry
         return $entityManager;
     }
 
-    public function getManagerForClass($class): ?EntityManagerInterface
+    /**
+     * @throws ReflectionException
+     */
+    public function getManagerForClass(string $class): ?EntityManagerInterface
     {
         $proxyClass = new ReflectionClass($class);
 
@@ -178,6 +180,8 @@ final class DoctrineManager implements ManagerRegistry
         }
 
         foreach ($this->managers as $manager) {
+            assert($manager instanceof ObjectManager);
+
             if (!$manager->getMetadataFactory()->isTransient($class)) {
                 return $manager;
             }
@@ -202,7 +206,13 @@ final class DoctrineManager implements ManagerRegistry
         return $this->managers;
     }
 
-    public function getRepository($persistentObject, $persistentManagerName = null): EntityRepository|ObjectRepository
+    /**
+     * @throws ReflectionException
+     */
+    public function getRepository(
+        string $persistentObject,
+        ?string $persistentManagerName = null
+    ): EntityRepository|ObjectRepository
     {
         return $this
             ->selectManager($persistentObject, $persistentManagerName)
@@ -245,11 +255,10 @@ final class DoctrineManager implements ManagerRegistry
 
     /**
      * @psalm-param class-string $persistentObject
+     * @throws ReflectionException
      */
-    private function selectManager(
-        string $persistentObject,
-        ?string $persistentManagerName = null
-    ): ObjectManager {
+    private function selectManager(string $persistentObject, ?string $persistentManagerName = null): ObjectManager
+    {
         if ($persistentManagerName !== null) {
             return $this->getManager($persistentManagerName);
         }

@@ -264,7 +264,7 @@ EOT
 
     private function checkExecutedUnavailableMigrations(
         ExecutedMigrationsList $executedUnavailableMigrations,
-        InputInterface $input
+        InputInterface $input,
     ): bool {
         if (count($executedUnavailableMigrations) !== 0) {
             $this->io->warning(
@@ -308,7 +308,7 @@ EOT
             $message = sprintf(
                 'Already at the %s version ("%s")',
                 $versionAlias,
-                (string)$version
+                (string)$version,
             );
 
             $this->io->success($message);
