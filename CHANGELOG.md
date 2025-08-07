@@ -1,5 +1,11 @@
 # Yii3 Doctrine Change Log
 
+## 2.1.3
+
+- Fix migration command
+- Fix signature method for nullable param php8.4
+- Update dependency
+
 ## 2.1.2
 
 - Fix version composer require checker

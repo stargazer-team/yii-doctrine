@@ -125,7 +125,7 @@ class BaseMigrationCommand extends Command
             $this->dependencyFactory = DependencyFactory::fromConnection(
                 $configurationLoader,
                 $connectionLoader,
-                $this->logger
+                $this->logger,
             );
         } elseif (null === $configuration->getConnectionName() && null !== $configuration->getEntityManagerName()) {
             $entityManagerLoader = ManagerRegistryEntityManager::withSimpleDefault($this->doctrineManager);
@@ -133,7 +133,7 @@ class BaseMigrationCommand extends Command
             $this->dependencyFactory = DependencyFactory::fromEntityManager(
                 $configurationLoader,
                 $entityManagerLoader,
-                $this->logger
+                $this->logger,
             );
         } else {
             throw new RuntimeException('Error config');

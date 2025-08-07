@@ -65,12 +65,12 @@ EOT
                 '',
                 sprintf(
                     'To run just this migration for testing purposes, you can use <info>doctrine:migrations:execute --up \'%s\'</info>',
-                    $fqcn
+                    $fqcn,
                 ),
                 '',
                 sprintf(
                     'To revert the migration you can use <info>doctrine:migrations:execute --down \'%s\'</info>',
-                    $fqcn
+                    $fqcn,
                 ),
                 '',
             ],

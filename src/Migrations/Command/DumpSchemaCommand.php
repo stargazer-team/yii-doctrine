@@ -38,6 +38,12 @@ After dumping your schema to a migration, you can rollup your migrations using t
 EOT
             )
             ->addOption(
+                'nowdoc',
+                null,
+                InputOption::VALUE_NONE,
+                'Output the generated SQL as a nowdoc string (always active for formatted queries).',
+            )
+            ->addOption(
                 'namespace',
                 null,
                 InputOption::VALUE_REQUIRED,
@@ -52,7 +58,7 @@ EOT
             ->addOption(
                 'line-length',
                 null,
-                InputOption::VALUE_OPTIONAL,
+                InputOption::VALUE_REQUIRED,
                 'Max line length of unformatted lines.',
                 '120',
             );
@@ -66,6 +72,7 @@ EOT
      */
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
+        $nowdocOutput = filter_var($input->getOption('nowdoc'), FILTER_VALIDATE_BOOLEAN);
         $lineLength = (int)$input->getOption('line-length');
 
         $schemaDumper = $this
@@ -84,7 +91,7 @@ EOT
         /** @psalm-var array<array-key, string>|array<empty> $filterTables */
         $filterTables = $input->getOption('filter-tables');
 
-        $path = $schemaDumper->dump($fqcn, $filterTables, false, $lineLength);
+        $path = $schemaDumper->dump($fqcn, $filterTables, false, $nowdocOutput, $lineLength);
 
         $this->io->text(
             [
@@ -92,12 +99,12 @@ EOT
                 '',
                 sprintf(
                     'To run just this migration for testing purposes, you can use <info>migrations:execute --up \'%s\'</info>',
-                    addslashes($fqcn)
+                    addslashes($fqcn),
                 ),
                 '',
                 sprintf(
                     'To revert the migration you can use <info>migrations:execute --down \'%s\'</info>',
-                    addslashes($fqcn)
+                    addslashes($fqcn),
                 ),
                 '',
                 'To use this as a rollup migration you can use the <info>migrations:rollup</info> command.',
