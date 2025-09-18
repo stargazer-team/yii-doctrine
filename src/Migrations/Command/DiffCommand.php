@@ -56,7 +56,7 @@ EOT
                 'nowdoc',
                 null,
                 InputOption::VALUE_NEGATABLE,
-                'Output the generated SQL as a nowdoc string (always active for formatted queries).',
+                'Output the generated SQL as a nowdoc string (enabled by default for formatted queries).',
             )
             ->addOption(
                 'line-length',
@@ -99,7 +99,11 @@ EOT
             $filterExpression = null;
         }
 
-        $nowdocOutput = filter_var($input->getOption('nowdoc'), FILTER_VALIDATE_BOOLEAN);
+        $nowdocOutput = $input->getOption('nowdoc');
+        $nowdocOutput = $nowdocOutput === null ? null : filter_var(
+            $input->getOption('nowdoc'),
+            FILTER_VALIDATE_BOOLEAN
+        );
         $lineLength = (int)$input->getOption('line-length');
         /** @var bool $allowEmptyDiff */
         $allowEmptyDiff = $input->getOption('allow-empty-diff');
