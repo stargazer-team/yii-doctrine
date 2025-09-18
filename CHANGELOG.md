@@ -1,5 +1,10 @@
 # Yii3 Doctrine Change Log
 
+## 2.1.4
+
+- Fix migration command
+- Update dependency
+
 ## 2.1.3
 
 - Fix migration command
