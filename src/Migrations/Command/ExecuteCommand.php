@@ -21,6 +21,7 @@ use function is_dir;
 use function is_string;
 use function is_writable;
 use function sprintf;
+use function strtoupper;
 
 /**
  * The ExecuteCommand class is responsible for executing migration versions up or down manually.

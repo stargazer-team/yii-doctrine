@@ -12,7 +12,11 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Yiisoft\Yii\Console\ExitCode;
 
 use function addslashes;
+use function filter_var;
 use function sprintf;
+use function str_contains;
+
+use const FILTER_VALIDATE_BOOLEAN;
 
 /**
  * The DumpSchemaCommand class is responsible for dumping your current database schema to a migration class. This is

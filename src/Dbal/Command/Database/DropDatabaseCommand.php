@@ -129,6 +129,7 @@ EOT
                 if ($schemaManager instanceof SQLiteSchemaManager) {
                     // dropDatabase() is deprecated for Sqlite
                     $connection->close();
+
                     if (file_exists($name)) {
                         unlink($name);
                     }
