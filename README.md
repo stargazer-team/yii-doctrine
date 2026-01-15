@@ -25,7 +25,7 @@ composer require stargazer-team/yii-doctrine
 Basic Usage
 -----------
 
-Configuration params doctrine: dbal, orm, migrations, fixture example config path [example.php](config/example.php)
+Configuration params doctrine: dbal, orm, migrations example config path [example.php](config/example.php)
 
 ### DBAL
 
