@@ -28,7 +28,7 @@
     },
     "require-dev": {
         "rector/rector": "^2.2.7",
-        "vimeo/psalm": "^4.30 || ^5.26.1 || ^6.10"
+        "vimeo/psalm": "^5.26.1 || ^6.11.0"
     },
     "autoload": {
         "psr-4": {

@@ -58,7 +58,7 @@ final class DynamicEntityManagerFactory
      *     events?: array,
      *     connection: string|non-empty-string
      * } $entityManagerConfig
-     * @psalm-param array{auto_generate?: bool, path: string, namespace?: string}|empty $proxyConfig
+     * @psalm-param array{auto_generate?: bool, path: string, namespace?: string, native_lazy_objects?: bool}|empty $proxyConfig
      */
     public function create(
         array $entityManagerConfig,

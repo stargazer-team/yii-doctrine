@@ -59,7 +59,8 @@ return [
             OrmConfigOptions::PROXIES => [
                 OrmConfigOptions::PROXY_NAMESPACE => 'Proxies',
                 OrmConfigOptions::PROXY_PATH => '@runtime/cache/doctrine/proxy',
-                OrmConfigOptions::PROXY_AUTO_GENERATE => true
+                OrmConfigOptions::PROXY_AUTO_GENERATE => true,
+                OrmConfigOptions::PROXY_NATIVE_LAZY_OBJECTS => true,
             ],
             OrmConfigOptions::DEFAULT_ENTITY_MANAGER => DoctrineManager::DEFAULT_ENTITY_MANAGER,
             OrmConfigOptions::ENTITY_MANAGERS => [

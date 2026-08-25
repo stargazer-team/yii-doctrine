@@ -67,7 +67,7 @@ final class ConfigurationFactory
      *     events?: array,
      *     connection: string|non-empty-string
      * } $ormConfig
-     * @psalm-param array{auto_generate?: bool, path: string, namespace?: string}|empty $proxyConfig
+     * @psalm-param array{auto_generate?: bool, path: string, namespace?: string, native_lazy_objects?: bool}|empty $proxyConfig
      */
     public function create(array $ormConfig, array $proxyConfig): Configuration
     {
@@ -85,6 +85,7 @@ final class ConfigurationFactory
         $configuration->setResultCache($this->cacheCollector->getResultCache());
 
         // proxy
+        $configuration->enableNativeLazyObjects($proxyConfig[ConfigOptions::PROXY_NATIVE_LAZY_OBJECTS] ?? false);
         $configuration->setProxyDir(
             $this->getProxyDir($proxyConfig[ConfigOptions::PROXY_PATH] ?? null),
         );
