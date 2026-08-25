@@ -63,6 +63,7 @@ final class ConfigOptions
     public const PROXY_NAMESPACE = 'namespace';
 
     public const PROXY_PATH = 'path';
+    public const PROXY_NATIVE_LAZY_OBJECTS = 'native_lazy_objects';
 
     public const QUOTE_STRATEGY = 'quote_strategy';
 
