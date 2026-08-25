@@ -1,5 +1,9 @@
 # Yii3 Doctrine Change Log
 
+## 2.1.6
+
+- Add orm proxy native lazy objects
+
 ## 2.1.5
 
 - Update dependency
